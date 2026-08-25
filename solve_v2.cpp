@@ -13,7 +13,7 @@
 #define YELLOW "\033[1;33m"
 #define GREEN "\033[1;32m"
 #define PURPLE "\033[35m"
-//TODO: почитать про const
+
 enum NUMB_SOLUTIONS
 {
     IMPOSSIBLE_NUM_SOLUTIONS = -1,
@@ -24,44 +24,52 @@ enum NUMB_SOLUTIONS
     IMPOSSIBLE_EQUATION,
 };
 
-struct values //TODO: переделать название чтобы было понятно, что это тип данных например добваить _t _s _k в конце
+struct values_s
 {
     NUMB_SOLUTIONS num_roots;
     double coef_a, coef_b, coef_c;
     double x1, x2;
 };
 
-//TODO: прочитать про const, подумать куда их можно применить
-
-int checking_answer          (values* consol_values);
-int input                    (values* consol_values);                                                // Enter coefficients
+int checking_answer          ();
+int input                    (values_s* consol_values);                                                // Enter coefficients
 int input_coef               (double* coef);
 bool clean_buf();
-//TODO: отделить вспомогательные блоки
-int solve                    (values* consol_values);
-NUMB_SOLUTIONS roots         (values consol_values,  double discr);                                  //number of roots
-bool isequal                  (double coef_1,         double coef_2);                                 //checking if the number is zero
-NUMB_SOLUTIONS a_iszero      (double coef_b,         double coef_c);                                 //if a is zero
-NUMB_SOLUTIONS b_iszero      (double coef_c);                                                        //if b is zero
-double discriminant          (values consol_values);                                                 //counting discriminant
+
+int solve                    (values_s* consol_values);
+NUMB_SOLUTIONS roots         (values_s consol_values,  double discr);
+
+bool isequal                  (double coef_1,          double coef_2);                                 //checking if the number is zero
+NUMB_SOLUTIONS a_iszero      (double coef_b,           double coef_c);                                 //if a is zero
+NUMB_SOLUTIONS b_iszero      (double coef_c);
+
+double discriminant          (values_s consol_values);                                                 //counting discriminant
 NUMB_SOLUTIONS checking_discr(double discr);
-int line_eq                  (values* consol_values);                                                //solving line equation
-int square_eq                (values* consol_values, double discr);                                  //solving square equation
+int line_eq                  (values_s* consol_values);                                                //solving line equation
+int square_eq                (values_s* consol_values, double discr);                                  //solving square equation
 
-int output                   (values consol_values);                                                 //output
+int output                   (values_s consol_values);                                                 //output
 
-bool check_work_comp();
+bool check_work_corr();
 int run_tests                ();
-int run_one_test             (values test);
-bool check_test              (values check_values, values test);
+int run_one_test             (values_s test);
+bool check_test              (values_s check_values, values_s test);
 
 //--------------------------------------------------------------------------------------------------------
-//TODO: сделать в main +- 4 команды: checking answer input solve output
-//TODO: проверка сразу в main из 2 функций сверху типа yes no если нет то сразу свернуть программу
+
 int main()
 {
-    values consol_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS, .coef_a = NAN, .coef_b = NAN, .coef_c = NAN, .x1 = NAN, .x2 = NAN};
-    checking_answer(&consol_values);
+    values_s consol_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS, .coef_a = NAN, .coef_b = NAN, .coef_c = NAN, .x1 = NAN, .x2 = NAN};
+    if (checking_answer() == 'Y' && !check_work_corr())
+    {
+        return 0;
+    }
+    input(&consol_values);
+
+    solve(&consol_values);
+
+    output(consol_values);
+
     return 0;
 }
 
@@ -69,10 +77,10 @@ int main()
 
 //enter
 //TODO: все таки постараться добавить assertы
-//TODO сделать чтобы тесты запускались по выбору(вернуть test в switchcase)
-int checking_answer(values* consol_values)
+int checking_answer()
 {
-    printf( YELLOW "Do you want to solve square equations?" NO_COLOR);
+    printf(YELLOW "Square equitions solver\n");
+    printf(YELLOW "Do you want to run tests before solving?" NO_COLOR);
     printf(GREEN "\nYes(Y)" RED "/NO(N)\n" NO_COLOR);
 
     int answer = 0;
@@ -83,35 +91,15 @@ int checking_answer(values* consol_values)
         clean_buf();
         answer = toupper(getchar());
     }
-    switch(answer)
-    {
-        case 'Y':
-            if (!check_work_comp())
-            {
-                return 0;
-            }
 
-            input(consol_values);
-
-            solve(consol_values);
-
-            output(*consol_values);
-            break;
-        case 'N':
-            printf(RED ">:(\n" NO_COLOR);
-            break;
-        default:
-            break;
-    }
-
-    return 0;
+    return answer;
 }
 
 
 
-int input(values* consol_values)
+int input(values_s* consol_values)
 {
-    printf("Solving square equation\n");
+    printf("\nSolving square equation\n");
     printf("Enter the coefficients a, b, c:");
     printf("\nEnter the coefficient before x^2: ");
     input_coef(&(consol_values -> coef_a));
@@ -158,7 +146,7 @@ bool clean_buf()
 
 //solving
 
-int solve(values* consol_values)
+int solve(values_s* consol_values)
  {
     double discr = discriminant(*consol_values);
     (consol_values -> num_roots) = roots(*consol_values, discr);
@@ -190,7 +178,7 @@ int solve(values* consol_values)
 
 
 
-NUMB_SOLUTIONS roots(values consol_values, double discr)
+NUMB_SOLUTIONS roots(values_s consol_values, double discr)
 {
     assert(isfinite(discr));
 
@@ -240,7 +228,7 @@ NUMB_SOLUTIONS b_iszero(double(coef_c))
 
 
 
-double discriminant(values consol_values)
+double discriminant(values_s consol_values)
 {
     double discr = consol_values.coef_b * consol_values.coef_b - 4 * consol_values.coef_a * consol_values.coef_c;
     return discr;
@@ -267,7 +255,7 @@ NUMB_SOLUTIONS checking_discr(double discr)
 
 
 
-int line_eq(values* consol_values)
+int line_eq(values_s* consol_values)
 {
     assert(isfinite(consol_values -> coef_b));
     assert(isfinite(consol_values -> coef_c));
@@ -279,7 +267,7 @@ int line_eq(values* consol_values)
 
 
 
-int square_eq(values* consol_values, double discr)
+int square_eq(values_s* consol_values, double discr)
 {
     assert(isfinite(consol_values -> coef_a));
     assert(isfinite(consol_values -> coef_b));
@@ -294,7 +282,7 @@ int square_eq(values* consol_values, double discr)
 
 //output
 
-int output(values consol_values)
+int output(values_s consol_values)
 {
     assert(isfinite(consol_values.num_roots));
     switch (consol_values.num_roots)
@@ -328,10 +316,12 @@ int output(values consol_values)
 
 //testing
 
-bool check_work_comp()
+bool check_work_corr()
 {
-    int success = run_tests();
-    if (success != NUMB_TESTS)
+    int num_tests = 10;
+    int success = run_tests();//TODO: плюс количество рандомных тестов
+    printf(GREEN "%d/%d SUCCESFUL" NO_COLOR, success, num_tests);
+    if (success != num_tests)
     {
         printf(RED "\nSorry, but the solver doesn't work correctly. Please try again later.\n" NO_COLOR);
         return false;
@@ -344,34 +334,34 @@ bool check_work_comp()
 int run_tests()
 {
     int test_succes = 0;
-    values test_1 = {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = -2, .x1 = 1,   .x2 = NAN};
+    values_s test_1 = {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = -2, .x1 = 1,   .x2 = NAN};
     test_succes += run_one_test(test_1);
-    values test_2 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 0,  .coef_c = -8, .x1 = -2,  .x2 = 2};
+    values_s test_2 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 0,  .coef_c = -8, .x1 = -2,  .x2 = 2};
     test_succes += run_one_test(test_2);
-    values test_3 = {.num_roots = IMPOSSIBLE_EQUATION, .coef_a = 0, .coef_b = 0,  .coef_c = 5,  .x1 = NAN, .x2 = NAN};
+    values_s test_3 = {.num_roots = IMPOSSIBLE_EQUATION, .coef_a = 0, .coef_b = 0,  .coef_c = 5,  .x1 = NAN, .x2 = NAN};
     test_succes += run_one_test(test_3);
-    values test_4 = {.num_roots = ONE_SOLUTION,        .coef_a = 2, .coef_b = 0,  .coef_c = 0,  .x1 = 0,   .x2 = NAN};
+    values_s test_4 = {.num_roots = ONE_SOLUTION,        .coef_a = 2, .coef_b = 0,  .coef_c = 0,  .x1 = 0,   .x2 = NAN};
     test_succes += run_one_test(test_4);
-    values test_5 = {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = 0,  .x1 = 0,   .x2 = NAN};
+    values_s test_5 = {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = 0,  .x1 = 0,   .x2 = NAN};
     test_succes += run_one_test(test_5);
-    values test_6 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 1, .coef_b = -1, .coef_c = 0,  .x1 = 0,   .x2 = 1};
+    values_s test_6 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 1, .coef_b = -1, .coef_c = 0,  .x1 = 0,   .x2 = 1};
     test_succes += run_one_test(test_6);
-    values test_7 = {.num_roots = INFINITY_SOLUTIONS,  .coef_a = 0, .coef_b = 0,  .coef_c = 0,  .x1 = NAN, .x2 = NAN};
+    values_s test_7 = {.num_roots = INFINITY_SOLUTIONS,  .coef_a = 0, .coef_b = 0,  .coef_c = 0,  .x1 = NAN, .x2 = NAN};
     test_succes += run_one_test(test_7);
-    values test_8 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 1, .coef_b = 3,  .coef_c = -2, .x1 = -2,  .x2 = -1};
+    values_s test_8 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 1, .coef_b = 3,  .coef_c = -2, .x1 = -2,  .x2 = -1};
     test_succes += run_one_test(test_8);
-    values test_9 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 8,  .coef_c = 6, .x1 = 1,    .x2 = 3};
+    values_s test_9 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 8,  .coef_c = 6, .x1 = 1,    .x2 = 3};
     test_succes += run_one_test(test_9);
-    values test_10 = {.num_roots = INFINITY_SOLUTIONS, .coef_a = 0, .coef_b = 2,  .coef_c = 10, .x1 = -5,  .x2 = NAN};
+    values_s test_10 = {.num_roots = INFINITY_SOLUTIONS, .coef_a = 0, .coef_b = 2,  .coef_c = 10, .x1 = -5,  .x2 = NAN};
     test_succes += run_one_test(test_10);
     return test_succes;
 }
 
 
 
-int run_one_test(values test)
+int run_one_test(values_s test)
 {
-    values check_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS, .coef_a = test.coef_a, .coef_b = test.coef_b, .coef_c = test.coef_c, .x1 = NAN, .x2 = NAN};
+    values_s check_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS, .coef_a = test.coef_a, .coef_b = test.coef_b, .coef_c = test.coef_c, .x1 = NAN, .x2 = NAN};
     solve(&check_values);
     if (!check_test(check_values, test))
     {
@@ -391,13 +381,13 @@ int run_one_test(values test)
 
 
 
-bool check_test(values check_values, values test)
+bool check_test(values_s check_values, values_s test)
 {
     return (check_values.num_roots == test.num_roots || (isequal(check_values.x1, test.x1) && isequal(check_values.x2, test.x2)));
 }
 
 
-//TODO: добавить функцию с рандомными тестами хз тыща
+//TODO: добавить функцию с рандомными тестами тыща
 
 
 
