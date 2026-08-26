@@ -7,7 +7,7 @@
 
 #define ALMOST_ZERO 0.00000001
 #define ONE_NUMBER 1
-#define NUMB_TESTS 10
+#define NUM_HAND_TESTS 10
 
 #define NO_COLOR "\033[0m"
 #define RED "\033[1;31m"
@@ -289,10 +289,10 @@ int output(values_s consol_values)
 
 bool check_work_corr()
 {
-    int num_tests = 1010;
-    int success = run_tests() + random_tests();
-    printf(GREEN "%d/%d TESTS SUCCESFUL" NO_COLOR, success, num_tests);
-    if (success != num_tests)
+    int num_tests = 1000 + NUM_HAND_TESTS;
+    int success_tests = run_tests() + random_tests();
+    printf(GREEN "%d/%d TESTS SUCCESFUL" NO_COLOR, success_tests, num_tests);
+    if (success_tests != num_tests)
     {
         printf(RED "\nSorry, but the solver doesn't work correctly. Please try again later.\n" NO_COLOR);
         return false;
@@ -304,28 +304,27 @@ bool check_work_corr()
 
 int run_tests()
 {
-    int test_succes = 0;
-    values_s test_1 = {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = -2, .x1 = 1,   .x2 = 1};
-    test_succes += run_one_test(test_1);
-    values_s test_2 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 0,  .coef_c = -8, .x1 = -2,  .x2 = 2};
-    test_succes += run_one_test(test_2);
-    values_s test_3 = {.num_roots = IMPOSSIBLE_EQUATION, .coef_a = 0, .coef_b = 0,  .coef_c = 5,  .x1 = NAN, .x2 = NAN};
-    test_succes += run_one_test(test_3);
-    values_s test_4 = {.num_roots = ONE_SOLUTION,        .coef_a = 2, .coef_b = 0,  .coef_c = 0,  .x1 = 0,   .x2 = 0};
-    test_succes += run_one_test(test_4);
-    values_s test_5 = {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = 0,  .x1 = 0,   .x2 = 0};
-    test_succes += run_one_test(test_5);
-    values_s test_6 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 1, .coef_b = -1, .coef_c = 0,  .x1 = 0,   .x2 = 1};
-    test_succes += run_one_test(test_6);
-    values_s test_7 = {.num_roots = INFINITY_SOLUTIONS,  .coef_a = 0, .coef_b = 0,  .coef_c = 0,  .x1 = NAN, .x2 = NAN};
-    test_succes += run_one_test(test_7);
-    values_s test_8 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 1, .coef_b = 3,  .coef_c = -2, .x1 = -2,  .x2 = -1};
-    test_succes += run_one_test(test_8);
-    values_s test_9 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 8,  .coef_c = 6, .x1 = 1,    .x2 = 3};
-    test_succes += run_one_test(test_9);
-    values_s test_10 = {.num_roots = ONE_SOLUTION, .coef_a = 0, .coef_b = 2,  .coef_c = 10, .x1 = -5,  .x2 = -5};
-    test_succes += run_one_test(test_10);
-    return test_succes;
+    int test_success = 0;
+    values_s tests[NUM_HAND_TESTS] =
+    {
+        {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = -2, .x1 = 1,   .x2 = 1},
+        {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 0,  .coef_c = -8, .x1 = -2,  .x2 = 2},
+        {.num_roots = IMPOSSIBLE_EQUATION, .coef_a = 0, .coef_b = 0,  .coef_c = 5,  .x1 = NAN, .x2 = NAN},
+        {.num_roots = ONE_SOLUTION,        .coef_a = 2, .coef_b = 0,  .coef_c = 0,  .x1 = 0,   .x2 = 0},
+        {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = 0,  .x1 = 0,   .x2 = 0},
+        {.num_roots = TWO_SOLUTIONS,       .coef_a = 1, .coef_b = -1, .coef_c = 0,  .x1 = 0,   .x2 = 1},
+        {.num_roots = INFINITY_SOLUTIONS,  .coef_a = 0, .coef_b = 0,  .coef_c = 0,  .x1 = NAN, .x2 = NAN},
+        {.num_roots = TWO_SOLUTIONS,       .coef_a = 1, .coef_b = 3,  .coef_c = -2, .x1 = -2,  .x2 = -1},
+        {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 8,  .coef_c = 6, .x1 = 1,    .x2 = 3},
+        {.num_roots = ONE_SOLUTION, .coef_a = 0, .coef_b = 2,  .coef_c = 10, .x1 = -5,  .x2 = -5}
+    };
+
+    for (int num_test = 0; num_test  < NUM_HAND_TESTS; ++num_test)
+    {
+        test_success += run_one_test(tests[num_test]);
+    }
+
+    return test_success;
 }
 
 
@@ -336,10 +335,10 @@ int run_one_test(values_s test)
     solve(&check_values);
     if (!check_test(check_values, test))
     {
-        printf(RED "                   Test FAILED\n" NO_COLOR
-               "           a = %lg, b = %lg, c = %lg\n"
-               "Expected: %d roots, x1 = %lg, x2 = %lg\n"
-               "Got:      %d roots, x1 = %lg, x2 = %lg\n",\
+        printf(RED "                  Test FAILED\n" NO_COLOR
+                   "           a = %lg, b = %lg, c = %lg\n"
+                   "Expected: %d roots, x1 = %lg, x2 = %lg\n"
+                   "Got:      %d roots, x1 = %lg, x2 = %lg\n",\
                          test.coef_a, test.coef_b, test.coef_c,\
                         test.num_roots, test.x1, test.x2,\
                     check_values.num_roots, check_values.x1, check_values.x2);
