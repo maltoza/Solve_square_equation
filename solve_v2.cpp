@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 #define ALMOST_ZERO 0.00000001
 #define ONE_NUMBER 1
@@ -54,7 +55,9 @@ bool check_work_corr   ();
 int run_tests          ();
 int run_one_test       (values_s test);
 bool check_test        (values_s check_values, values_s test);
+int random_tests       ();
 bool check_random_roots(values_s rand_values);
+double rand_doub();
 
 //--------------------------------------------------------------------------------------------------------
 
@@ -151,28 +154,7 @@ int solve(values_s* consol_values)
  {
     double discr = discriminant(*consol_values);
     (consol_values -> num_roots) = roots(*consol_values, discr);
-    switch (consol_values -> num_roots)
-    {
-        case ONE_SOLUTION:
-            if (isequal(consol_values -> coef_a, 0))
-            {
-                line_eq(consol_values);
-            }
-            else
-            {
-                (consol_values) -> x1 = 0;
-            }
-            break;
-        case TWO_SOLUTIONS:
-            square_eq(consol_values, discr);
-            break;
-        case INFINITY_SOLUTIONS:
-        case IMPOSSIBLE_EQUATION:
-        case IMPOSSIBLE_NUM_SOLUTIONS:
-        case ZERO_SOLUTIONS:
-        default:
-            break;
-    }
+    square_eq(consol_values, discr);
 
     return 0;
  }
@@ -256,18 +238,6 @@ NUMB_SOLUTIONS checking_discr(double discr)
 
 
 
-int line_eq(values_s* consol_values)
-{
-    assert(isfinite(consol_values -> coef_b));
-    assert(isfinite(consol_values -> coef_c));
-
-    (consol_values -> x1) = 0 - (consol_values -> coef_c)/(consol_values -> coef_b);
-
-    return 0;
-}
-
-
-
 int square_eq(values_s* consol_values, double discr)
 {
     assert(isfinite(consol_values -> coef_a));
@@ -335,15 +305,15 @@ bool check_work_corr()
 int run_tests()
 {
     int test_succes = 0;
-    values_s test_1 = {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = -2, .x1 = 1,   .x2 = NAN};
+    values_s test_1 = {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = -2, .x1 = 1,   .x2 = 1};
     test_succes += run_one_test(test_1);
     values_s test_2 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 0,  .coef_c = -8, .x1 = -2,  .x2 = 2};
     test_succes += run_one_test(test_2);
     values_s test_3 = {.num_roots = IMPOSSIBLE_EQUATION, .coef_a = 0, .coef_b = 0,  .coef_c = 5,  .x1 = NAN, .x2 = NAN};
     test_succes += run_one_test(test_3);
-    values_s test_4 = {.num_roots = ONE_SOLUTION,        .coef_a = 2, .coef_b = 0,  .coef_c = 0,  .x1 = 0,   .x2 = NAN};
+    values_s test_4 = {.num_roots = ONE_SOLUTION,        .coef_a = 2, .coef_b = 0,  .coef_c = 0,  .x1 = 0,   .x2 = 0};
     test_succes += run_one_test(test_4);
-    values_s test_5 = {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = 0,  .x1 = 0,   .x2 = NAN};
+    values_s test_5 = {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = 0,  .x1 = 0,   .x2 = 0};
     test_succes += run_one_test(test_5);
     values_s test_6 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 1, .coef_b = -1, .coef_c = 0,  .x1 = 0,   .x2 = 1};
     test_succes += run_one_test(test_6);
@@ -353,7 +323,7 @@ int run_tests()
     test_succes += run_one_test(test_8);
     values_s test_9 = {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 8,  .coef_c = 6, .x1 = 1,    .x2 = 3};
     test_succes += run_one_test(test_9);
-    values_s test_10 = {.num_roots = INFINITY_SOLUTIONS, .coef_a = 0, .coef_b = 2,  .coef_c = 10, .x1 = -5,  .x2 = NAN};
+    values_s test_10 = {.num_roots = ONE_SOLUTION, .coef_a = 0, .coef_b = 2,  .coef_c = 10, .x1 = -5,  .x2 = -5};
     test_succes += run_one_test(test_10);
     return test_succes;
 }
@@ -391,11 +361,11 @@ bool check_test(values_s check_values, values_s test)
 
 int random_tests()
 {
-    success = 0;
+    int success = 0;
     int k = 0;
     while (k != 1000)
     {
-        values_s rand_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS, .coef_a = rand(), .coef_b = rand(), .coef_c = rand(), .x1 = NAN, .x2 = NAN};
+        values_s rand_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS, .coef_a = rand_doub(), .coef_b = rand_doub(), .coef_c = rand_doub(), .x1 = NAN, .x2 = NAN};
         solve(&rand_values);
         if ((isnan(rand_values.x1) && isnan(rand_values.x2)) || (check_random_roots(rand_values)))
         {
@@ -406,11 +376,13 @@ int random_tests()
 
     return success;
 }
-//TODO: поменять чтобы при одном корне в x1 и x2 записывались одинаковые решения
+
+
+
 bool check_random_roots(values_s rand_values)
 {
-    if ((rand_values.coef_a * rand_values.x1 * rand_values.x1 + rand_values.coef_b * rand_values.x1 + rand_values.coef_c == 0) &&\
-    (rand_values.coef_a * rand_values.x2 * rand_values.x2 + rand_values.coef_b * rand_values.x2 + rand_values.coef_c == 0))
+    if (isequal(rand_values.coef_a * rand_values.x1 * rand_values.x1 + rand_values.coef_b * rand_values.x1 + rand_values.coef_c, 0) &&\
+    isequal(rand_values.coef_a * rand_values.x2 * rand_values.x2 + rand_values.coef_b * rand_values.x2 + rand_values.coef_c, 0))
     {
         return true;
     }
@@ -418,4 +390,9 @@ bool check_random_roots(values_s rand_values)
     return false;
 }
 
+double rand_doub()
+{
+    double x = RAND_MAX* (rand() / RAND_MAX);
+    return x;
+}
 
