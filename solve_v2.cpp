@@ -8,12 +8,21 @@
 #define ALMOST_ZERO 0.00000001
 #define ONE_NUMBER 1
 #define NUM_HAND_TESTS 10
+#define NUM_RANDOM_TESTS 1000
 
 #define NO_COLOR "\033[0m"
 #define RED "\033[1;31m"
 #define YELLOW "\033[1;33m"
 #define GREEN "\033[1;32m"
 #define PURPLE "\033[35m"
+
+// Множество возможных количеств решений
+/**
+    \details Количество решений квадратного уравнения (от 0 до 2),
+    бесконечное множество решений = 3,
+    невозможное количество корней = -1,
+    уравнение, которое невозможно решить = 4
+*/
 
 enum NUMB_SOLUTIONS
 {
@@ -24,15 +33,15 @@ enum NUMB_SOLUTIONS
     INFINITY_SOLUTIONS,
     IMPOSSIBLE_EQUATION,
 };
-//TODO: doxygen
+
 struct values_s
 {
     NUMB_SOLUTIONS num_roots;
-    double coef_a, coef_b, coef_c;        //TODO: две структуры
+    double coef_a, coef_b, coef_c;                                  //TODO: две структуры
     double x1, x2;
 };
 
-//TODO: блоки переставить
+
 int checking_answer();
 int input          (values_s* consol_values);
 int input_coef     (double* coef);
@@ -50,7 +59,7 @@ NUMB_SOLUTIONS b_iszero      (double coef_c);
 
 int output(values_s consol_values);
 
-bool check_random_test ();
+bool check_random_tests ();
 int run_tests          ();
 int run_one_test       (values_s test);
 bool check_test        (values_s check_values, values_s test);
@@ -66,7 +75,7 @@ int main()
                               .coef_a = NAN, .coef_b = NAN, .coef_c = NAN,
                               .x1 = NAN, .x2 = NAN};
 
-    if (checking_answer() == 'Y' && !check_random_test())
+    if (checking_answer() == 'Y' && !check_random_tests())
     {
         return 0;
     }
@@ -102,7 +111,28 @@ int checking_answer()
     return answer;
 }
 
+/**
+    \date Август 2026 года
+    \brief Функция ввода коэффицентов
+    \details Запрос на ввод коэффицентов квадратного уравнения
+    \code
+    int input(values_s* consol_values)
+    {
+        printf("\nSolving square equation\n");
+        printf("Enter the coefficients a, b, c:");
+        printf("\nEnter the coefficient before x^2: ");
+        input_coef(&(consol_values -> coef_a));
+        printf("\nEnter the coefficient before x: ");
+        input_coef(&(consol_values -> coef_b));
+        printf( "\nEnter the absolute term of equation: ");
+        input_coef(&(consol_values -> coef_c));
 
+        return 0;
+    }
+    \endcode
+    \warning использовать с умом
+
+*/
 
 int input(values_s* consol_values)
 {
@@ -118,7 +148,15 @@ int input(values_s* consol_values)
     return 0;
 }
 
-
+/**
+    \date Август 2026 года
+    \brief Функция считывания коэффицентов квадратного уравнения
+    \details Считывает коэффицент из командной строки,
+    проверяет правильность ввода,
+    при неправильном вводе выдаёт ошибку
+    \param coef адрес коэффицента квадратного уравнения
+    \warning Указатель не может быть пустым
+*/
 
 int input_coef(double* coef)
 {
@@ -306,9 +344,9 @@ int output(values_s consol_values)
 
 //testing
 
-bool check_random_test()
+bool check_random_tests()
 {
-    int num_tests = 1000 + NUM_HAND_TESTS;
+    int num_tests = NUM_RANDOM_TESTS + NUM_HAND_TESTS;
     int success_tests = run_tests() + random_tests();
     printf(GREEN "%d/%d TESTS SUCCESFUL" NO_COLOR, success_tests, num_tests);
     if (success_tests != num_tests)
@@ -383,7 +421,7 @@ bool check_test(values_s check_values, values_s test)
 int random_tests()
 {
     int success = 0;
-    for (int k = 0; k < 1000; k++)
+    for (int k = 0; k < NUM_RANDOM_TESTS; k++)
     {
         values_s rand_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS,
                                 .coef_a = rand_doub(), .coef_b = rand_doub(), .coef_c = rand_doub(),
@@ -412,7 +450,7 @@ int random_tests()
 
 bool check_random_roots(values_s rand_values)
 {
-    if (isequal(rand_values.coef_a * rand_values.x1 * rand_values.x1 + rand_values.coef_b * rand_values.x1 + rand_values.coef_c, 0) &&\
+    if (isequal(rand_values.coef_a * rand_values.x1 * rand_values.x1 + rand_values.coef_b * rand_values.x1 + rand_values.coef_c, 0) &&
     isequal(rand_values.coef_a * rand_values.x2 * rand_values.x2 + rand_values.coef_b * rand_values.x2 + rand_values.coef_c, 0))
     {
         return true;
