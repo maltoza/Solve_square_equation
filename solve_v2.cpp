@@ -291,7 +291,7 @@ bool check_work_corr()
 {
     int num_tests = 1010;
     int success = run_tests() + random_tests();
-    printf(GREEN "%d/%d SUCCESFUL" NO_COLOR, success, num_tests);
+    printf(GREEN "%d/%d TESTS SUCCESFUL" NO_COLOR, success, num_tests);
     if (success != num_tests)
     {
         printf(RED "\nSorry, but the solver doesn't work correctly. Please try again later.\n" NO_COLOR);
@@ -301,7 +301,7 @@ bool check_work_corr()
     return true;
 }
 
-//выводить количество тестов
+
 int run_tests()
 {
     int test_succes = 0;
@@ -371,6 +371,16 @@ int random_tests()
         {
             success += 1;
         }
+        else
+        {
+        printf(RED "              Test FAILED\n" NO_COLOR
+                   "      a = %lg, b = %lg, c = %lg\n"
+                   "Expected: %d roots, x1 = %lg, x2 = %lg\n"
+                   "Got:      %d roots, x1 = %lg, x2 = %lg\n",\
+                         rand_values.coef_a, rand_values.coef_b, rand_values.coef_c,\
+                        rand_values.num_roots, rand_values.x1, rand_values.x2,\
+                    rand_values.num_roots, rand_values.x1, rand_values.x2);
+        }
         k++;
     }
 
@@ -392,7 +402,6 @@ bool check_random_roots(values_s rand_values)
 
 double rand_doub()
 {
-    double x = RAND_MAX* (rand() / RAND_MAX);
+    double x = RAND_MAX * (rand() / RAND_MAX);
     return x;
 }
-
