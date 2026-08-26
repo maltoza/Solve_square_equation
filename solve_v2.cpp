@@ -3,11 +3,11 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <ctype.h>
-//TODO: сохранять на гитхаб как можно чаще
+
 #define ALMOST_ZERO 0.00000001
 #define ONE_NUMBER 1
 #define NUMB_TESTS 10
-//TODO: цвета через define попробовать свернуть в параметр(тип функции))  Color_text (str color)
+
 #define NO_COLOR "\033[0m"
 #define RED "\033[1;31m"
 #define YELLOW "\033[1;33m"
@@ -31,10 +31,10 @@ struct values_s
     double x1, x2;
 };
 
-int checking_answer          ();
-int input                    (values_s* consol_values);                                                // Enter coefficients
-int input_coef               (double* coef);
-bool clean_buf();
+int checking_answer();
+int input          (values_s* consol_values);                                                // Enter coefficients
+int input_coef     (double* coef);
+bool clean_buf     ();
 
 int solve                    (values_s* consol_values);
 NUMB_SOLUTIONS roots         (values_s consol_values,  double discr);
@@ -48,12 +48,13 @@ NUMB_SOLUTIONS checking_discr(double discr);
 int line_eq                  (values_s* consol_values);                                                //solving line equation
 int square_eq                (values_s* consol_values, double discr);                                  //solving square equation
 
-int output                   (values_s consol_values);                                                 //output
+int output(values_s consol_values);                                                                    //output
 
-bool check_work_corr();
-int run_tests                ();
-int run_one_test             (values_s test);
-bool check_test              (values_s check_values, values_s test);
+bool check_work_corr   ();
+int run_tests          ();
+int run_one_test       (values_s test);
+bool check_test        (values_s check_values, values_s test);
+bool check_random_roots(values_s rand_values);
 
 //--------------------------------------------------------------------------------------------------------
 
@@ -318,8 +319,8 @@ int output(values_s consol_values)
 
 bool check_work_corr()
 {
-    int num_tests = 10;
-    int success = run_tests();//TODO: плюс количество рандомных тестов
+    int num_tests = 1010;
+    int success = run_tests() + random_tests();
     printf(GREEN "%d/%d SUCCESFUL" NO_COLOR, success, num_tests);
     if (success != num_tests)
     {
@@ -387,8 +388,34 @@ bool check_test(values_s check_values, values_s test)
 }
 
 
-//TODO: добавить функцию с рандомными тестами тыща
 
+int random_tests()
+{
+    success = 0;
+    int k = 0;
+    while (k != 1000)
+    {
+        values_s rand_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS, .coef_a = rand(), .coef_b = rand(), .coef_c = rand(), .x1 = NAN, .x2 = NAN};
+        solve(&rand_values);
+        if ((isnan(rand_values.x1) && isnan(rand_values.x2)) || (check_random_roots(rand_values)))
+        {
+            success += 1;
+        }
+        k++;
+    }
 
+    return success;
+}
+//TODO: поменять чтобы при одном корне в x1 и x2 записывались одинаковые решения
+bool check_random_roots(values_s rand_values)
+{
+    if ((rand_values.coef_a * rand_values.x1 * rand_values.x1 + rand_values.coef_b * rand_values.x1 + rand_values.coef_c == 0) &&\
+    (rand_values.coef_a * rand_values.x2 * rand_values.x2 + rand_values.coef_b * rand_values.x2 + rand_values.coef_c == 0))
+    {
+        return true;
+    }
+
+    return false;
+}
 
 
