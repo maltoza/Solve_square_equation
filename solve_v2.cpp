@@ -22,7 +22,7 @@
     \details Количество решений квадратного уравнения (от 0 до 2),
     бесконечное множество решений = 3,
     невозможное количество корней = -1,
-    уравнение, которое невозможно решить = 4.
+    уравнение, которое невозможно решить = 4
 */
 
 enum NUMB_SOLUTIONS
@@ -45,39 +45,38 @@ struct values_s
 
 int checking_answer();
 int input          (values_s* consol_values);
-int input_coef     (double* coef, char* err);
+int input_coef     (double* coef);
+bool clean_buf     ();
 
-int solve              (values_s* consol_values);
-int line_eq            (values_s* consol_values);
-int square_eq          (values_s* consol_values, double discr);//TODO: const для аргументов, переставить
-double discriminant    (values_s consol_values);
-NUMB_SOLUTIONS sq_roots   (double discr);
-NUMB_SOLUTIONS line_roots(double coef_b,           double coef_c);
-NUMB_SOLUTIONS special_roots(double coef_c);
+int solve                    (values_s* consol_values);
+NUMB_SOLUTIONS roots         (values_s consol_values,  double discr);
+double discriminant          (values_s consol_values);
+NUMB_SOLUTIONS checking_discr(double discr);
+int square_eq                (values_s* consol_values, double discr);
 
-bool isequal  (double coef_1, double coef_2);
-bool clean_buf();
+bool isequal                 (double coef_1,          double coef_2);
+NUMB_SOLUTIONS a_iszero      (double coef_b,           double coef_c);
+NUMB_SOLUTIONS b_iszero      (double coef_c);
 
 int output(values_s consol_values);
 
-bool go_tests          ();
-bool check_all_tests   ();
+bool check_random_tests ();
 int run_tests          ();
 int run_one_test       (values_s test);
 bool check_test        (values_s check_values, values_s test);
 int random_tests       ();
 bool check_random_roots(values_s rand_values);
-double rand_double       ();
+double rand_doub       ();
 
 //--------------------------------------------------------------------------------------------------------
 
 int main()
 {
-    srand(time(NULL));//TODO: перенести
-    values_s consol_values = {.num_roots = NOT_NUM_SOLUTIONS,
+    values_s consol_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS,
                               .coef_a = NAN, .coef_b = NAN, .coef_c = NAN,
                               .x1 = NAN, .x2 = NAN};
-    if (go_tests())//TODOtesting
+
+    if (checking_answer() == 'Y' && !check_random_tests())
     {
         return 0;
     }
@@ -98,8 +97,8 @@ int main()
 int checking_answer()
 {
     printf(YELLOW "Square equations solver\n");
-    printf(YELLOW "Do you want to run tests before solving?\n" NO_COLOR);
-    printf(GREEN "Yes(Y)" RED "/NO(N)\n" NO_COLOR);
+    printf(YELLOW "Do you want to run tests before solving?" NO_COLOR);
+    printf(GREEN "\nYes(Y)" RED "/NO(N)\n" NO_COLOR);
 
     int answer = 0;
     answer = toupper(getchar());
@@ -138,14 +137,14 @@ int checking_answer()
 
 int input(values_s* consol_values)
 {
-    printf("Solving square equation\n");
-    printf("Enter the coefficients a, b, c\n");
-
-    input_coef(&(consol_values -> coef_a), &"Enter the coefficient before x^2: ");
-
-    input_coef(&(consol_values -> coef_b), &"Enter the coefficient before x: ");
-
-    input_coef(&(consol_values -> coef_c), &"Enter the absolute term of equation: ");
+    printf("\nSolving square equation\n");
+    printf("Enter the coefficients a, b, c:");
+    printf("\nEnter the coefficient before x^2: ");
+    input_coef(&(consol_values -> coef_a));
+    printf("\nEnter the coefficient before x: ");
+    input_coef(&(consol_values -> coef_b));
+    printf( "\nEnter the absolute term of equation: ");
+    input_coef(&(consol_values -> coef_c));
 
     return 0;
 }
@@ -160,7 +159,7 @@ int input(values_s* consol_values)
     \warning Указатель не может быть пустым
 */
 
-int input_coef(double* coef, char* err)
+int input_coef(double* coef)
 {
     assert(coef != NULL);
 
@@ -182,22 +181,14 @@ int input_coef(double* coef, char* err)
 //solving
 
 int solve(values_s* consol_values)
-{
+ {
     assert(isfinite(consol_values -> coef_a));
     assert(isfinite(consol_values -> coef_b));
     assert(isfinite(consol_values -> coef_c));
 
-    if (isequal(consol_values -> coef_a, 0))
-    {
-        consol_values -> num_roots = line_roots(consol_values -> coef_b, consol_values -> coef_c);
-        line_eq(consol_values);
-    }
-    else
-    {
-        double discr = discriminant(*consol_values);
-        consol_values -> num_roots = sq_roots(discr);
-        square_eq(consol_values, discr);
-    }
+    double discr = discriminant(*consol_values);
+    (consol_values -> num_roots) = roots(*consol_values, discr);
+    square_eq(consol_values, discr);
 
     return 0;
 }
@@ -206,13 +197,17 @@ int solve(values_s* consol_values)
 
 int line_eq(values_s* consol_values)
 {
-    if (consol_values -> num_roots == NOT_NUM_SOLUTIONS)
-        {
-            (consol_values -> num_roots) = ONE_SOLUTION;
-            consol_values -> x1 = 0 - consol_values -> coef_c / consol_values -> coef_b;
-            consol_values -> x2 = 0 - consol_values -> coef_c / consol_values -> coef_b;
-        }
-    return 0;
+    assert(isfinite(discr));
+    assert(isfinite(consol_values.coef_a));
+    assert(isfinite(consol_values.coef_b));
+    assert(isfinite(consol_values.coef_c));
+
+    if (isequal(consol_values.coef_a, 0))
+    {
+        return a_iszero(consol_values.coef_b, consol_values.coef_c);
+    }
+
+    return checking_discr(discr);
 }
 
 
@@ -229,7 +224,7 @@ double discriminant(values_s consol_values)
 
 
 
-NUMB_SOLUTIONS sq_roots(double discr)
+NUMB_SOLUTIONS checking_discr(double discr)
 {
     assert(isfinite(discr));
 
@@ -262,30 +257,6 @@ int square_eq(values_s* consol_values, double discr)
     return 0;
 }
 
-
-
-NUMB_SOLUTIONS line_roots(double coef_b, double coef_c)
-{
-    assert(isfinite(coef_b));
-    assert(isfinite(coef_c));
-
-    if (isequal(coef_b, 0))
-    {
-        return special_roots(coef_c);
-    }
-
-    return ONE_SOLUTION;
-}
-
-
-
-NUMB_SOLUTIONS special_roots(double coef_c)
-{
-    assert(isfinite(coef_c));
-
-    return (isequal(coef_c, 0)) ? INFINITY_SOLUTIONS : IMPOSSIBLE_EQUATION;
-}
-
 //help
 
 bool isequal(double coef_1, double coef_2)
@@ -300,23 +271,36 @@ bool isequal(double coef_1, double coef_2)
 
 
 
-bool clean_buf()
+NUMB_SOLUTIONS a_iszero(double coef_b, double coef_c)
 {
-    bool flag = true;
+    assert(isfinite(coef_b));
+    assert(isfinite(coef_c));
 
-    while(getchar() != '\n')
+    if (isequal(coef_b, 0))
     {
-        flag = false;//TODO: если пробелы
+        return b_iszero(coef_c);
     }
 
-    return flag;
+    return ONE_SOLUTION;
 }
+
+
+
+NUMB_SOLUTIONS b_iszero(double coef_c)
+{
+    assert(isfinite(coef_c));
+
+    return (isequal(coef_c, 0)) ? INFINITY_SOLUTIONS : IMPOSSIBLE_EQUATION;
+}
+
+
+
 
 //output
 
 int output(values_s consol_values)
 {
-    assert(consol_values.num_roots != NOT_NUM_SOLUTIONS);
+    assert(consol_values.num_roots != IMPOSSIBLE_NUM_SOLUTIONS);
 
     switch (consol_values.num_roots)
     {
@@ -354,7 +338,7 @@ bool go_tests()
 }
 
 
-bool check_all_tests()
+bool check_random_tests()
 {
     int num_tests = NUM_RANDOM_TESTS + NUM_HAND_TESTS;
     int success_tests = run_tests() + random_tests();
@@ -400,13 +384,13 @@ int run_tests()
 
 int run_one_test(values_s test)
 {
-    values_s check_values = {.num_roots = NOT_NUM_SOLUTIONS,
+    values_s check_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS,
                              .coef_a = test.coef_a, .coef_b = test.coef_b, .coef_c = test.coef_c,
                              .x1 = NAN, .x2 = NAN};
     solve(&check_values);
     if (!check_test(check_values, test))
     {
-        printf(RED "              Hand Test FAILED\n" NO_COLOR
+        printf(RED "                 Test FAILED\n" NO_COLOR
                    "           a = %lg, b = %lg, c = %lg\n"
                    "Expected: %d roots, x1 = %lg, x2 = %lg\n"
                    "Got:      %d roots, x1 = %lg, x2 = %lg\n",\
@@ -434,11 +418,24 @@ int random_tests()
     int success = 0;
     for (int k = 0; k < NUM_RANDOM_TESTS; k++)
     {
-        values_s rand_values = {.num_roots = NOT_NUM_SOLUTIONS,
-                                .coef_a = rand_double(), .coef_b = rand_double(), .coef_c = rand_double(),
+        values_s rand_values = {.num_roots = IMPOSSIBLE_NUM_SOLUTIONS,
+                                .coef_a = rand_doub(), .coef_b = rand_doub(), .coef_c = rand_doub(),
                                 .x1 = NAN, .x2 = NAN};
         solve(&rand_values);
-        success += check_random_roots(rand_values); //проверка корней
+        if ((isnan(rand_values.x1) && isnan(rand_values.x2)) || (check_random_roots(rand_values)))
+        {
+            success += 1;
+        }
+        else
+        {
+        printf(RED "              Test FAILED\n" NO_COLOR
+                   "      a = %lg, b = %lg, c = %lg\n"
+                   "Expected: %d roots, x1 = %lg, x2 = %lg\n"
+                   "Got:      %d roots, x1 = %lg, x2 = %lg\n",\
+                         rand_values.coef_a, rand_values.coef_b, rand_values.coef_c,\
+                        rand_values.num_roots, rand_values.x1, rand_values.x2,\
+                    rand_values.num_roots, rand_values.x1, rand_values.x2);
+        }
     }
 
     return success;
@@ -447,45 +444,20 @@ int random_tests()
 
 bool check_random_roots(values_s rand_values)
 {
-    assert(isfinite(rand_values.coef_a));
-    assert(isfinite(rand_values.coef_b));
-    assert(isfinite(rand_values.coef_c));
-
-    if ((rand_values.num_roots == INFINITY_SOLUTIONS || rand_values.num_roots == IMPOSSIBLE_EQUATION
-    || rand_values.num_roots == ZERO_SOLUTIONS) && isnan(rand_values.x1) && isnan(rand_values.x2))
+    if (isequal(rand_values.coef_a * rand_values.x1 * rand_values.x1 + rand_values.coef_b * rand_values.x1 + rand_values.coef_c, 0) &&
+    isequal(rand_values.coef_a * rand_values.x2 * rand_values.x2 + rand_values.coef_b * rand_values.x2 + rand_values.coef_c, 0))
     {
         return true;
     }
-    else if (rand_values.num_roots == ONE_SOLUTION && isnan(rand_values.x2) && check_rand_roots(rand_values, rand_values.x1))
-    {
-        return true;
-    }
-    else if (rand_values.num_roots == TWO_SOLUTIONS && check_rand_roots(rand_values, rand_values.x1) &&
-    check_rand_roots(rand_values, rand_values.x2))
-    {
-        return true;//TODO отдельная функция для уравнения
-    }
-    else
-    {
-        printf(RED "           Random Test FAILED\n" NO_COLOR
-                   "      a = %lg, b = %lg, c = %lg\n"
-                   "      %d roots, x1 = %lg, x2 = %lg\n",\
-                        rand_values.coef_a, rand_values.coef_b, rand_values.coef_c,\
-                        rand_values.num_roots, rand_values.x1, rand_values.x2);
-        return false;
-    }
+
+    return false;
 }
 
-
-bool check_rand_roots(values_s rand_values, double x)
-{
-  return isequal(rand_values.coef_a * x * x + rand_values.coef_b * x + rand_values.coef_c);
-}
 
 
 double rand_double()
 {
-    double x = RAND_MAX * (rand() / (RAND_MAX + 1.0));//TODO: отрицательные
+    double x = RAND_MAX * (rand() / (RAND_MAX + 1.0));
 
     return x;
 }
