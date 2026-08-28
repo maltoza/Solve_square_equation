@@ -39,23 +39,22 @@ enum NUMB_SOLUTIONS
 struct values_s
 {
     NUMB_SOLUTIONS num_roots;
-    double coef_a, coef_b, coef_c;                                  //TODO: две структуры и const в качастве аргументов функция
+    double coef_a, coef_b, coef_c;                                  //TODO: две структуры
     double x1, x2;
 };
 
-
+//TODO const в качастве аргументов функция
 
 int input     (values_s* consol_values);
 int input_coef(double* coef, char err[]);
 
 int solve                      (values_s* consol_values);
-NUMB_SOLUTIONS line_roots      (double coef_b,           double coef_c);
+NUMB_SOLUTIONS line_roots      (double coef_b,            double coef_c);
 NUMB_SOLUTIONS partic_solutions(double coef_c);
 int line_eq                    (values_s* consol_values);
 double discriminant            (values_s consol_values);
 NUMB_SOLUTIONS sq_roots        (double discr);
-int square_eq                  (values_s* consol_values, double discr);
-
+int square_eq                  (values_s* consol_values,  double discr);
 
 bool isequal   (double coef_1, double coef_2);
 bool clean_buf ();
@@ -98,7 +97,6 @@ int main()
 //--------------------------------------------------------------------------------------------------------
 
 //enter
-
 
 /**
     \date Август 2026 года
@@ -188,6 +186,7 @@ int solve(values_s* consol_values)
 }
 
 
+
 NUMB_SOLUTIONS line_roots(double coef_b, double coef_c)
 {
     assert(isfinite(coef_b));
@@ -200,6 +199,7 @@ NUMB_SOLUTIONS line_roots(double coef_b, double coef_c)
 
     return ONE_SOLUTION;
 }
+
 
 
 NUMB_SOLUTIONS partic_solutions(double coef_c)
@@ -284,6 +284,8 @@ bool isequal(double coef_1, double coef_2)
     return false;
 }
 
+
+
 bool clean_buf()
 {
     bool flag = true;
@@ -295,7 +297,6 @@ bool clean_buf()
 
     return flag; //TODO пробелы 1 строка
 }
-
 
 //output
 
@@ -339,12 +340,11 @@ int checking_answer()
     printf(YELLOW "Square equations solver\n");
     printf(YELLOW "Do you want to run tests before solving?\n" NO_COLOR);
     printf(GREEN "Yes(Y)" RED "/NO(N)\n" NO_COLOR);
-
     int answer = 0;
     answer = toupper(getchar());
     while (answer != 'Y' && answer != 'N')
     {
-        printf(RED "Unknown command. Try again!\n " NO_COLOR);
+        printf(RED "Unknown command. Try again!\n" NO_COLOR);
         printf(YELLOW "Do you want to run tests before solving?\n" NO_COLOR);
         printf(GREEN "Yes(Y)" RED "/NO(N)\n" NO_COLOR);
         clean_buf();
@@ -362,15 +362,20 @@ bool testing()
 }
 
 
+
 bool check_all_tests()
 {
     int num_tests = NUM_RANDOM_TESTS + NUM_HAND_TESTS;
     int success_tests = hand_tests() + random_tests();
-    printf(YELLOW "%d/%d TESTS SUCCESFUL\n" NO_COLOR, success_tests, num_tests); //TODO цвет
     if (num_tests != success_tests)
     {
+        printf(RED "%d/%d TESTS SUCCESFUL\n" NO_COLOR, success_tests, num_tests);
         printf(RED "Sorry, but the solver doesn't work correctly. Please try again later.\n" NO_COLOR);
         return false;
+    }
+    else
+    {
+        printf(GREEN "%d/%d TESTS SUCCESFUL\n" NO_COLOR, success_tests, num_tests);
     }
 
     return true;
@@ -394,7 +399,7 @@ int hand_tests()
         {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 8,  .coef_c = 6,  .x1 = 1,   .x2 = 3  },
         {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = 10, .x1 = -5,  .x2 = -5 }
     };
-//TODO длину массива sizeof()
+        //TODO длину массива sizeof()
     for (int num_test = 0; num_test  < NUM_HAND_TESTS; ++num_test)
     {
         test_success += run_one_test(tests[num_test]);
@@ -469,6 +474,7 @@ int random_tests()
 }
 
 
+
 bool check_random_test(values_s rand_values)
 {
     if ((rand_values.num_roots == ZERO_SOLUTIONS || rand_values.num_roots == IMPOSSIBLE_EQUATION
@@ -490,6 +496,7 @@ bool check_random_test(values_s rand_values)
 }
 
 
+
 bool check_sq_root(values_s rand_values, double x)
 {
     if (isequal(rand_values.coef_a * x * x + rand_values.coef_b * x + rand_values.coef_c, 0))
@@ -499,6 +506,7 @@ bool check_sq_root(values_s rand_values, double x)
 
     return false;
 }
+
 
 
 double rand_double()
