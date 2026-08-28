@@ -6,8 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define ALMOST_ZERO 0.00000001
-#define ONE_NUMBER 1
+#define EPSILON 0.00000001
 #define NUM_HAND_TESTS 10
 #define NUM_RANDOM_TESTS 1000
 #define MAX_LEN 50
@@ -26,7 +25,7 @@
     уравнение, которое невозможно решить = 4
 */
 
-enum NUMB_SOLUTIONS
+enum numb_solutions
 {
     NOT_NUM_SOLUTIONS = -1,
     ZERO_SOLUTIONS,
@@ -38,7 +37,7 @@ enum NUMB_SOLUTIONS
 
 struct values_s
 {
-    NUMB_SOLUTIONS num_roots;
+    numb_solutions num_roots;
     double coef_a, coef_b, coef_c;                                  //TODO: две структуры
     double x1, x2;
 };
@@ -46,30 +45,30 @@ struct values_s
 //TODO const в качастве аргументов функция
 
 int input     (values_s* consol_values);
-int input_coef(double* coef, char err[]);
+int input_coef(double* const coef, const char err[]);
 
-int solve                      (values_s* consol_values);
-NUMB_SOLUTIONS line_roots      (double coef_b,            double coef_c);
-NUMB_SOLUTIONS partic_solutions(double coef_c);
-int line_eq                    (values_s* consol_values);
-double discriminant            (values_s consol_values);
-NUMB_SOLUTIONS sq_roots        (double discr);
-int square_eq                  (values_s* consol_values,  double discr);
+int solve                      (values_s* const consol_values);
+numb_solutions line_roots      (const double coef_b,            const double coef_c);
+numb_solutions partic_solutions(const double coef_c);
+int line_eq                    (values_s* const consol_values);
+double discriminant            (const values_s consol_values);
+numb_solutions sq_roots        (const double discr);
+int square_eq                  (values_s* const consol_values, const double discr);
 
-bool isequal   (double coef_1, double coef_2);
+bool isequal   (const double coef_1, const double coef_2);
 bool clean_buf ();
 
-int output(values_s consol_values);
+int output(const values_s consol_values);
 
 int checking_answer   ();
 bool testing          ();
 bool check_all_tests  ();
 int hand_tests        ();
-int run_one_test      (values_s test);
-bool check_hand_test  (values_s check_values, values_s test);
+int run_hand_test      (const values_s test);
+bool check_hand_test  (const values_s check_values, const values_s test);
 int random_tests      ();
-bool check_random_test(values_s rand_values);
-bool check_sq_root    (values_s rand_values, double x);
+bool check_random_test(const values_s rand_values);
+bool check_sq_root    (const values_s rand_values, const double x);
 double rand_double    ();
 
 //--------------------------------------------------------------------------------------------------------
@@ -123,13 +122,12 @@ int main()
 
 int input(values_s* consol_values)
 {
-    printf("\nSolving square equation\n");
-    printf("Enter the coefficients a, b, c");
-    char err_a[MAX_LEN] = "\nEnter the coefficient before x^2: ", err_b[MAX_LEN] = "\nEnter the coefficient before x: ",
-    err_c[MAX_LEN] = "\nEnter the absolute term of equation: ";
-    input_coef(&(consol_values -> coef_a), err_a);
-    input_coef(&(consol_values -> coef_b), err_b);
-    input_coef(&(consol_values -> coef_c), err_c);
+    printf("Solving square equation\n");
+    printf("Enter the coefficients a, b, c\n");
+
+    input_coef(&(consol_values -> coef_a), "Enter the coefficient before x^2: ");
+    input_coef(&(consol_values -> coef_b), "Enter the coefficient before x: ");
+    input_coef(&(consol_values -> coef_c), "Enter the constant term: ");
 
     return 0;
 }
@@ -144,7 +142,7 @@ int input(values_s* consol_values)
     \warning Указатель не может быть пустым
 */
 
-int input_coef(double* coef, char* err)
+int input_coef(double* const coef, const char err[])
 {
     assert(coef != NULL);
 
@@ -156,7 +154,7 @@ int input_coef(double* coef, char* err)
         {
             clean_buf();
         }
-        printf(RED "Input error. Try again!" NO_COLOR);
+        printf(RED "Input error. Try again!\n" NO_COLOR);
         printf("%s", err);
     }
 
@@ -165,11 +163,12 @@ int input_coef(double* coef, char* err)
 
 //solving
 
-int solve(values_s* consol_values)
+int solve(values_s* const consol_values)
  {
     assert(isfinite(consol_values -> coef_a));
     assert(isfinite(consol_values -> coef_b));
     assert(isfinite(consol_values -> coef_c));
+
     if (isequal(consol_values -> coef_a, 0))
     {
         consol_values -> num_roots = line_roots(consol_values -> coef_b, consol_values -> coef_c);
@@ -187,7 +186,7 @@ int solve(values_s* consol_values)
 
 
 
-NUMB_SOLUTIONS line_roots(double coef_b, double coef_c)
+numb_solutions line_roots(const double coef_b, const double coef_c)
 {
     assert(isfinite(coef_b));
     assert(isfinite(coef_c));
@@ -202,7 +201,7 @@ NUMB_SOLUTIONS line_roots(double coef_b, double coef_c)
 
 
 
-NUMB_SOLUTIONS partic_solutions(double coef_c)
+numb_solutions partic_solutions(const double coef_c)
 {
     assert(isfinite(coef_c));
 
@@ -211,7 +210,7 @@ NUMB_SOLUTIONS partic_solutions(double coef_c)
 
 
 
-int line_eq(values_s* consol_values)
+int line_eq(values_s* const consol_values)
 {
     assert(isfinite(consol_values -> coef_a));
     assert(isfinite(consol_values -> coef_b));
@@ -227,7 +226,7 @@ int line_eq(values_s* consol_values)
 
 
 
-double discriminant(values_s consol_values)
+double discriminant(const values_s consol_values)
 {
     assert(isfinite(consol_values.coef_a));
     assert(isfinite(consol_values.coef_b));
@@ -239,7 +238,7 @@ double discriminant(values_s consol_values)
 
 
 
-NUMB_SOLUTIONS sq_roots(double discr)
+numb_solutions sq_roots(const double discr)
 {
     assert(isfinite(discr));
 
@@ -259,7 +258,7 @@ NUMB_SOLUTIONS sq_roots(double discr)
 
 
 
-int square_eq(values_s* consol_values, double discr)
+int square_eq(values_s* const consol_values, const double discr)
 {
     assert(isfinite(consol_values -> coef_a));
     assert(isfinite(consol_values -> coef_b));
@@ -274,9 +273,9 @@ int square_eq(values_s* consol_values, double discr)
 
 //help
 
-bool isequal(double coef_1, double coef_2)
+bool isequal(const double coef_1, const double coef_2)
 {
-    if (fabs(coef_1 - coef_2) < ALMOST_ZERO || (isnan(coef_1) && isnan(coef_2)))
+    if (fabs(coef_1 - coef_2) < EPSILON || (isnan(coef_1) && isnan(coef_2)))
     {
         return true;
     }
@@ -295,12 +294,12 @@ bool clean_buf()
         flag = false;
     }
 
-    return flag; //TODO пробелы 1 строка
+    return flag;
 }
 
 //output
 
-int output(values_s consol_values)
+int output(const values_s consol_values)
 {
     assert(consol_values.num_roots != NOT_NUM_SOLUTIONS);
 
@@ -398,11 +397,12 @@ int hand_tests()
         {.num_roots = TWO_SOLUTIONS,       .coef_a = 1, .coef_b = 3,  .coef_c = -2, .x1 = -2,  .x2 = -1 },
         {.num_roots = TWO_SOLUTIONS,       .coef_a = 2, .coef_b = 8,  .coef_c = 6,  .x1 = 1,   .x2 = 3  },
         {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = 10, .x1 = -5,  .x2 = -5 }
+
     };
         //TODO длину массива sizeof()
     for (int num_test = 0; num_test  < NUM_HAND_TESTS; ++num_test)
     {
-        test_success += run_one_test(tests[num_test]);
+        test_success += run_hand_test(tests[num_test]);
     }
 
     return test_success;
@@ -410,7 +410,7 @@ int hand_tests()
 
 
 
-int run_one_test(values_s test)
+int run_hand_test(const values_s test)
 {
     values_s check_values = {.num_roots = NOT_NUM_SOLUTIONS,
                              .coef_a = test.coef_a, .coef_b = test.coef_b, .coef_c = test.coef_c,
@@ -434,7 +434,7 @@ int run_one_test(values_s test)
 
 
 
-bool check_hand_test(values_s check_values, values_s test)
+bool check_hand_test(const values_s check_values, const values_s test)
 {
     return (check_values.num_roots == test.num_roots || (isequal(check_values.x1, test.x1) && isequal(check_values.x2, test.x2)));
 }
@@ -475,7 +475,7 @@ int random_tests()
 
 
 
-bool check_random_test(values_s rand_values)
+bool check_random_test(const values_s rand_values)
 {
     if ((rand_values.num_roots == ZERO_SOLUTIONS || rand_values.num_roots == IMPOSSIBLE_EQUATION
     || rand_values.num_roots == INFINITY_SOLUTIONS) && isnan(rand_values.x1) && isnan(rand_values.x2))
@@ -497,7 +497,7 @@ bool check_random_test(values_s rand_values)
 
 
 
-bool check_sq_root(values_s rand_values, double x)
+bool check_sq_root(const values_s rand_values, const double x)
 {
     if (isequal(rand_values.coef_a * x * x + rand_values.coef_b * x + rand_values.coef_c, 0))
     {
