@@ -4,22 +4,21 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <time.h>
+#include <time.h> //TODO gitignore, заголовки в html, считывание из файла, мб защиту ввода, поделить программу на файлы
 
 #define EPSILON 0.00000001 ///< Погрешность сравнения чисел типа double
 #define NUM_HAND_TESTS 10 ///< Количество ручных тестов
 #define NUM_RANDOM_TESTS 1000 ///< Количество рандомных тестов
 #define MAX_LEN 50 ///< Максимальная длина строки
 
-#define NO_COLOR "\033[0m" ///< Белый цвет
+#define NO_COLOR "\033[0m" ///< Отмена цвета
 #define RED "\033[1;31m" ///< Красный цвет
 #define YELLOW "\033[1;33m" ///< Жёлтый цвет
 #define GREEN "\033[1;32m" ///< Зелёный цвет
 #define PURPLE "\033[35m" ///< Фиолетовый цвет
 
-/**
-    \brief Множество решений квадратного уравнения
-*/
+
+///\brief Множество решений квадратного уравнения
 enum numb_solutions
 {
     INITIALIZ_VAL = -1, ///< Инициализирующее значение
@@ -31,9 +30,7 @@ enum numb_solutions
 };
 
 
-
 ///\brief Структура, содержащая коэффиценты квадратного уравнения
-
 struct coefficients_s
 {
     double coef_a, ///< Коэффицент перед квадратным членом
@@ -41,19 +38,18 @@ struct coefficients_s
     coef_c; ///< Коэффицент перед свободным членом
 };
 
-///\brief Структура, содержащая количество корней и корни квадратного уравнения
 
+///\brief Структура, содержащая количество корней и корни квадратного уравнения
 struct roots_s
 {
     numb_solutions num_roots; ///< Количество корней
-    double x1, ///<Меньший корень
+    double x1, ///< Меньший корень
     x2; ///< Больший корень
 };
 
 
-
 int input     (coefficients_s* const consol_coefs);
-int input_coef(double* const coef, const char err[]);
+int input_coef(double* const coef,                 const char prompt[]);
 
 int solve                      (const coefficients_s consol_coefs, roots_s* const consol_roots);
 numb_solutions line_roots      (const double coef_b,               const double coef_c);
@@ -68,14 +64,14 @@ bool clean_buf ();
 
 int output(const roots_s consol_roots);
 
-int checking_answer   ();
 bool testing          ();
+int checking_answer   ();
 bool check_all_tests  ();
 int hand_tests        ();
 int run_hand_test     (const coefficients_s test_coefs, const roots_s test_roots);
-bool check_hand_test  (const roots_s check_roots, const roots_s test_roots);
+bool check_hand_test  (const roots_s check_roots,       const roots_s test_roots);
 int random_tests      ();
-bool run_random_test  (coefficients_s rand_coef, roots_s* const rand_roots);
+bool run_random_test  (coefficients_s rand_coef,        roots_s* const rand_roots);
 bool check_random_test(const coefficients_s rand_coefs, const roots_s rand_roots);
 bool check_sq_root    (const coefficients_s rand_coefs, const double x);
 double rand_double    ();
@@ -108,11 +104,10 @@ int main()
 /**
     \brief Функция запроса ввода коэффицентов
     \details Запрос на ввод коэффицентов квадратного уравнения, вызов функции input_coef()
-    \param consol_coefs Указатель на структуру коэффицентов consol_coef, созданную в main
-    \return 0 - успешное завершение программы
+    \param consol_coefs Указатель на структуру коэффицентов consol_coef, созданную в main()
+    \return 0 - успешное завершение работы функции
 
-*/
-
+ */
 int input(coefficients_s* const consol_coefs)
 {
     printf("Solving square equation\n");
@@ -125,25 +120,26 @@ int input(coefficients_s* const consol_coefs)
     return 0;
 }
 
+
 /**
     \brief Функция считывания коэффицента квадратного уравнения
-    \param coef адрес коэффицента квадратного уравнения
-    \param err массив символов (строка), уточняющий, какой коэффицент нужно вводить
+    \param coef Адрес коэффицента квадратного уравнения
+    \param prompt Массив символов (строка), уточняющий, какой коэффицент нужно вводить
     \details Пишет в командную строку что нужно вводить, создаёт переменную flag,
     сигнализирующую о количестве правильно считанных слов.
-    Запускает цикл, заканчивающийся, когда верно считано одно число или функция clean_buf() (очистка буфера) вернула true.
-    В цикле если количество верно считанных чисел равно 0 (ни одного числа не считалось),
-    очистка буфера запускается ещё раз, чтобы предотвратить ввод не численных значений.
+    Запускает цикл, заканчивающийся, когда верно считано одно число и функция clean_buf() (очистка буфера) вернула true.
+    В цикле, если количество верно считанных чисел равно 0 (ни одного числа не считалось),
+    очистка буфера запускается ещё раз, т.к. она не сработала в условии цикла из-за того,
+    что первый аргумент логического "или" (||) вернул true.
     В цикле программа выводит ошибку ввода и предлагает ввести ещё раз нужный коэффицент.
     \return 0 - успешное завершение программы
-*/
-
-int input_coef(double* const coef, const char err[])
+ */
+int input_coef(double* const coef, const char prompt[])
 {
     assert(coef != NULL);
 
-    printf("%s", err);
-    bool flag = 1;
+    printf("%s", prompt);
+    int flag = 1;
     while ((flag = scanf("%lg", coef)) != 1 || clean_buf() == false)
     {
         if (flag == 0)
@@ -151,11 +147,12 @@ int input_coef(double* const coef, const char err[])
             clean_buf();
         }
         printf(RED "Input error. Try again!\n" NO_COLOR);
-        printf("%s", err);
+        printf("%s", prompt);
     }
 
     return 0;
 }
+
 
 /**
     \brief Решение уравнения
@@ -165,11 +162,9 @@ int input_coef(double* const coef, const char err[])
     затем line_eq() вычисляет корнию. Если a != 0, уравнение квадратное, discriminant() вычисляет дискриминант,
     sq_roots() находит количество корней квадратного уравнения, square_eq() находит корни.
     \return 0 - успешное завершение работы
-
-*/
-
+ */
 int solve(const coefficients_s consol_coefs, roots_s* const consol_roots)
- {
+{
     assert(isfinite(consol_coefs.coef_a));
     assert(isfinite(consol_coefs.coef_b));
     assert(isfinite(consol_coefs.coef_c));
@@ -189,16 +184,16 @@ int solve(const coefficients_s consol_coefs, roots_s* const consol_roots)
     return 0;
 }
 
+
 /**
     \brief Поиск количества корней линейного уравнения
-    \param coef_b коэффицент при линейном член уравнения
+    \param coef_b коэффицент при линейном члене уравнения
     \param coef_c коэффицент при свободном члене уравнения
-    \details Если b = 0, возвращает partic_solutions(), либо бесконечное количество решений, либо невозможно решить уравнение.
+    \details Если b = 0, возвращает partic_solutions() (либо бесконечное количество решений, либо невозможно решить уравнение).
     Если b != 0 возвращает 1 решение.
     \return ONE_SOLUTION - 1 решение
     \return partic_solutions()
  */
-
 numb_solutions line_roots(const double coef_b, const double coef_c)
 {
     assert(isfinite(coef_b));
@@ -212,6 +207,7 @@ numb_solutions line_roots(const double coef_b, const double coef_c)
     return ONE_SOLUTION;
 }
 
+
 /**
     \brief Частные случаи линейного уравнения
     \param coef_c свободный член
@@ -219,7 +215,6 @@ numb_solutions line_roots(const double coef_b, const double coef_c)
     \return INFINITY SOLUTIONS = 3 бесконечное множество решений
     \return IMPOSSIBLE_EQUATION = 4 уравнение невозможно решить
  */
-
 numb_solutions partic_solutions(const double coef_c)
 {
     assert(isfinite(coef_c));
@@ -227,15 +222,15 @@ numb_solutions partic_solutions(const double coef_c)
     return (isequal(coef_c, 0)) ? INFINITY_SOLUTIONS : IMPOSSIBLE_EQUATION;
 }
 
+
 /**
     \brief Решение линейного уравнения
     \param consol_coefs Структура, содержащая коэффиценты квадратного уравнения
-    \param consol_roots указатель на структуру, содержащую количество корней и корни уравнения
+    \param consol_roots Указатель на структуру, содержащую количество корней и корни уравнения
     \details Если количество решений = 1, то consol_roots -> x1 и consol_roots -> x2 присваивается значение корня.
     В противном случае ничего не происходит и функция завершает работу.
     \return 0 - успешное завершение работы
  */
-
 int line_eq(const coefficients_s consol_coefs, roots_s* const consol_roots)
 {
     assert(isfinite(consol_coefs.coef_a));
@@ -251,13 +246,13 @@ int line_eq(const coefficients_s consol_coefs, roots_s* const consol_roots)
     return 0;
 }
 
+
 /**
     \brief Вычисление дискриминанта
-    \param consol_coefs структура, содержащая коэффиценты квадратного уравнения
+    \param consol_coefs Структура, содержащая коэффиценты квадратного уравнения
     \details Вычисляется дискриминант по формуле D = b*b - 4*a*c.
     \return discr - значение дискриминанта
  */
-
 double discriminant(const coefficients_s consol_coefs)
 {
     assert(isfinite(consol_coefs.coef_a));
@@ -295,6 +290,7 @@ numb_solutions sq_roots(const double discr)
     }
 }
 
+
 /**
     \brief Решение квадратного уравнения
     \param consol_roots Структура, содержащая количество корней и корни уравнения
@@ -304,8 +300,7 @@ numb_solutions sq_roots(const double discr)
     При совпадении корней им присваиваются одинаковые значения.
     \return 0 - успешное завершение работы
 
-*/
-
+ */
 int square_eq(roots_s* const consol_roots, const double discr, const coefficients_s consol_coefs)
 {
     assert(isfinite(consol_coefs.coef_a));
@@ -319,23 +314,18 @@ int square_eq(roots_s* const consol_roots, const double discr, const coefficient
     return 0;
 }
 
+
 /**
     \brief Проверка на равенство
     \param coef_1 Первое число
     \param coef_2 Второе число
-    \details Проверяет, являются ли два числа NAN или сравнивает разницу двух аргументов EPSILON - очень близким к нулю числом.
+    \details Проверяет, являются ли два числа NAN или сравнивает разницу двух аргументов с EPSILON - очень близким к нулю числом.
     \return true - если числа равны либо оба NAN
     \return false - если числа не равны
-*/
-
+ */
 bool isequal(const double coef_1, const double coef_2)
 {
-    if ((isnan(coef_1) && isnan(coef_2)) || fabs(coef_1 - coef_2) < EPSILON)
-    {
-        return true;
-    }
-
-    return false;
+    return ((isnan(coef_1) && isnan(coef_2)) || fabs(coef_1 - coef_2) < EPSILON)
 }
 
 
@@ -344,29 +334,33 @@ bool isequal(const double coef_1, const double coef_2)
     \details Создаёт переменную flag со значнием true. Если в строке остались символы помимо '\\n',
     запускает цикл, считывающий по одному символу и удаляющий их из буфера, пока не дойдет до символа '\\n',
     затем удаляет его и заканчивает работу.
-    Если цикл был запущен, значение flag меняется на false.
+    Если цикл был запущен и в строке остались не только пробелы, значение flag меняется на false.
     \return flag = true, если буфер не очищался
     \return flag = false, если буфер очищался
-*/
+ */
 bool clean_buf()
 {
     bool flag = true;
 
-    while(getchar() != '\n')
+    char c;
+    while((c = getchar()) != '\n')
     {
-        flag = false;
+        if (!isspace(c))
+        {
+            flag = false;
+        }
     }
 
     return flag;
 }
 
+
 /**
     \brief Вывод корней
-    \param consol_roots Структура, содерэащая количество корней и корни уравнения
+    \param consol_roots Структура, содержащая количество корней и корни уравнения
     \details Выводит количество и значения корней, соответствующее значению num_roots.
     \return 0 - успешное завершение работы
  */
-
 int output(const roots_s consol_roots)
 {
     assert(consol_roots.num_roots != INITIALIZ_VAL);
@@ -400,25 +394,25 @@ int output(const roots_s consol_roots)
     return 0;
 }
 
+
 /**
     \brief Проверка и запуск тестов
     \details checking_answer() проверяет, согласен ли пользователь запустить тесты,
-    !check_all_tests() останавливает программу, если не все тесты пройдены верно.
-*/
-
+    check_all_tests() возвращает false если хотя бы один тест не пройден.
+ */
 bool testing()
 {
     return checking_answer() == 'Y' && !check_all_tests();
 }
 
+
 /**
-    \brief Проверка ответа про запуск тестов
+    \brief Проверка ответа на вопрос про запуск тестов
     \details Запускается цикл, который запрашивает ответ и выдаёт ошибку, если введено не Y или N,
     работает, пока считываемый символ не будет Y или N.
     getchar() считывает код буквы, toupper() переводит её в верхний регистр.
-    \return answer - числовой код буквы ответа
+    \return answer - ASCII код буквы ответа
  */
-
 int checking_answer()
 {
     printf(YELLOW "Square equations solver\n");
@@ -438,15 +432,15 @@ int checking_answer()
     return answer;
 }
 
+
 /**
     \brief Проверка тестов
     \details Создает переменные num_tests - общее количество тестов и success_tests - количество успешно пройденных тестов.
     Если количество успешных тестов не овпадает с общм количеством тестов, то выводит ошибку и возвращает false.
     В противном случае печатает, что все тесты пройдены верно и возвращает true.
-    \return false - не все пройденные тесты верны
-    \return true - все пройденные тесты успешны
+    \return false - хотя бы один тест не пройден
+    \return true - все тесты успешно пройдены
  */
-
 bool check_all_tests()
 {
     int num_tests = NUM_RANDOM_TESTS + NUM_HAND_TESTS;
@@ -465,11 +459,12 @@ bool check_all_tests()
     return true;
 }
 
+
 /**
     \brief Определение значений для ручных тестов
-    \details Задаёт 2 массива, test_coefs - все частные случаи коэффицентов и test_roots - решения для них,
-    и переменную tests_success - количество успешных тестов.
-    Затем запускает цикл, запускающий функцией run_hand_test() по одному все ручные тесты и, при успешном выполнении,
+    \details Задаёт 2 массива и переменную, массив test_coefs - все частные случаи коэффицентов, масссив test_roots - решения для них,
+    переменная tests_success - количество успешных тестов.
+    Затем запускает цикл, который функцией run_hand_test() по одному запускает все ручные тесты и, при успешном выполнении,
     увеличивает количество успешных тестов на 1.
     \return test_success - количество успешно выполненных тестов
  */
@@ -513,6 +508,7 @@ int hand_tests()
     return test_success;
 }
 
+
 /**
     \brief Запуск одного ручного теста
     \param test_coefs Структура, содержащая коэффиценты, по которым нужно вычислять корни
@@ -523,7 +519,6 @@ int hand_tests()
     \return 0 - тест провален
     \return 1 - тест пройден
  */
-
 int run_hand_test(const coefficients_s test_coefs, const roots_s test_roots)
 {
     roots_s check_roots = {.num_roots = INITIALIZ_VAL, .x1 = NAN, .x2 = NAN};
@@ -544,6 +539,7 @@ int run_hand_test(const coefficients_s test_coefs, const roots_s test_roots)
     return 1;
 }
 
+
 /**
     \brief Проверка ручных тестов
     \param check_roots Структура, содержащая значения, подсчитанные программой
@@ -559,13 +555,13 @@ bool check_hand_test(const roots_s check_roots, const roots_s test_roots)
     return (check_roots.num_roots == test_roots.num_roots && isequal(check_roots.x1, test_roots.x1) && isequal(check_roots.x2, test_roots.x2));
 }
 
+
 /**
     \brief Создание рандомных тестов
-    \details Запускает цикл, который запускает рандомные тесты по одному.
+    \details Начинает цикл, который запускает рандомные тесты по одному.
     Если тест успешен, то к количеству успешных прибавляется 1.
     \return success - количество успешных тестов
  */
-
 int random_tests()
 {
     srand(time(NULL));
@@ -580,16 +576,16 @@ int random_tests()
     return success;
 }
 
+
 /**
     \brief Запуск рандомного теста
     \param rand_coefs Структура, содержащая рандомные коэффиценты
-    \param rand_roots Указательь на структуру, содержащую корни, вычисленные из рандомных коэффицентов
+    \param rand_roots Указатель на структуру, содержащую корни, вычисленные из рандомных коэффицентов
     \details Проверяет успешность теста с помощью check_random_test().
     В случае неуспеха, выводит ошибку и возвращает 0. В случае успеха возвращает 1.
     \return 1 - тест пройден
     \return 0 - тест не пройден
-*/
-
+ */
 bool run_random_test(coefficients_s rand_coefs, roots_s* const rand_roots)
 {
     rand_coefs = {.coef_a = rand_double(), .coef_b = rand_double(), .coef_c = rand_double()};
@@ -617,7 +613,7 @@ bool run_random_test(coefficients_s rand_coefs, roots_s* const rand_roots)
     \param rand_coefs Структура, содержащая рандомные коэффиценты
     \param rand_roots Структура, содержащая корни, вычисленные из рандомных коэффицентов
     \details Первая проверка: если 0 корней, бесконечное количество решений или уравнение нельзя решить,
-    то x1 и x2 проверяются на NAN. В слчае успеха возвращается true.
+    то x1 и x2 проверяются на NAN. В случае успеха возвращается true.
     Вторая проверка: если 1 корень, то x2 проверяется на NAN и проверяется верность значения x1 с помощью check_sq_root()
     Третья проверка: если 2 корня, то проверяется верность значений x1 и x2 с помощью check_sq_root()
     \return true - проверка успешна
@@ -668,7 +664,7 @@ bool check_sq_root(const coefficients_s rand_coefs, const double x)
     \brief Генерация рандомного числа типа double
     \details В функции random_tests() устанавливается начало функции rand() в зависимости от количества секунд,
     прошедших с начала дня, чтобы числа были действительно случайными.
-     *RAND_MAX/(RAND_MAX + 1.0) превращает число типа int в число типа double.
+    RAND_MAX/(RAND_MAX + 1.0) превращает число типа int в число типа double.
     \return x - рандомное double число
  */
 
