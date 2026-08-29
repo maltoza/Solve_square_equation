@@ -26,23 +26,29 @@ enum numb_solutions
     ZERO_SOLUTIONS, ///< 0 решений
     ONE_SOLUTION, ///< 1 решение
     TWO_SOLUTIONS, ///< 2 решения
-    INFINITY_SOLUTIONS, ///< Бесконечное количество решений
-    IMPOSSIBLE_EQUATION, ///< Уравнение невозможно решить
+    INFINITY_SOLUTIONS, ///< 3 Бесконечное количество решений
+    IMPOSSIBLE_EQUATION, ///< 4 Уравнение невозможно решить
 };
 
 
+
+///\brief Структура, содержащая коэффиценты квадратного уравнения
 
 struct coefficients_s
 {
-    double coef_a, coef_b, coef_c;
+    double coef_a, ///< Коэффицент перед квадратным членом
+    coef_b, ///< Коэффицент перед линейным членом
+    coef_c; ///< Коэффицент перед свободным членом
 };
+
+///\brief Структура, содержащая количество корней и корни квадратного уравнения
 
 struct roots_s
 {
-    numb_solutions num_roots;
-    double x1, x2;
+    numb_solutions num_roots; ///< Количество корней
+    double x1, ///<Мменьший корень
+    x2; ///< Больший корень
 };
-
 
 
 
@@ -50,12 +56,12 @@ int input     (coefficients_s* const consol_coefs);
 int input_coef(double* const coef, const char err[]);
 
 int solve                      (const coefficients_s consol_coefs, roots_s* const consol_roots);
-numb_solutions line_roots      (const double coef_b,            const double coef_c);
+numb_solutions line_roots      (const double coef_b,               const double coef_c);
 numb_solutions partic_solutions(const double coef_c);
 int line_eq                    (const coefficients_s consol_coefs, roots_s* const consol_roots);
 double discriminant            (const coefficients_s consol_coefs);
 numb_solutions sq_roots        (const double discr);
-int square_eq                  (roots_s* const consol_roots, const double discr, const coefficients_s consol_coefs);
+int square_eq                  (roots_s* const consol_roots,       const double discr,          const coefficients_s consol_coefs);
 
 bool isequal   (const double coef_1, const double coef_2);
 bool clean_buf ();
@@ -66,7 +72,7 @@ int checking_answer   ();
 bool testing          ();
 bool check_all_tests  ();
 int hand_tests        ();
-int run_hand_test      (const coefficients_s test_coefs, const roots_s test_roots);
+int run_hand_test     (const coefficients_s test_coefs, const roots_s test_roots);
 bool check_hand_test  (const roots_s check_roots, const roots_s test_roots);
 int random_tests      ();
 bool check_random_test(const coefficients_s rand_coefs, const roots_s rand_roots);
@@ -99,10 +105,10 @@ int main()
 //enter
 
 /**
-    \brief Функция запроса на ввод коэффицентов
-    \details Запрос на ввод коэффицентов квадратного уравнения, вызов фукции, считывающей значения коэффицентов с консоли
-    \param[in] consol_values
-    \warning
+    \brief Функция запроса ввода коэффицентов
+    \details Запрос на ввод коэффицентов квадратного уравнения, вызов функции input_coef()
+    \param consol_coefs Указатель на структуру коэффицентов consol_coef, созданную в main
+    \return 0 - успешное завершение программы
 
 */
 
@@ -119,13 +125,16 @@ int input(coefficients_s* const consol_coefs)
 }
 
 /**
-    \date Август 2026 года
-    \brief Функция считывания коэффицентов квадратного уравнения
-    \details Считывает коэффицент из командной строки,
-    проверяет правильность ввода,
-    при неправильном вводе выдаёт ошибку
+    \brief Функция считывания коэффицента квадратного уравнения
     \param coef адрес коэффицента квадратного уравнения
-    \warning Указатель не может быть пустым
+    \param err массив символов (строка), уточняющий, какой коэффицент нужно вводить
+    \details Пишет в командную строку что нужно вводить, создаёт переменную flag,
+    сигнализирующую о количестве правильно считанных слов.
+    Запускает цикл, заканчивающийся, когда верно считано одно число или функция clean_buf() (очистка буфера) вернула true.
+    В цикле если количество верно считанных чисел равно 0 (ни одного числа не считалось),
+    очистка буфера запускается ещё раз, чтобы предотвратить ввод не численных значений.
+    В цикле программа выводит ошибку ввода и предлагает ввести ещё раз нужный коэффицент.
+    \return 0 - успешное завершение программы
 */
 
 int input_coef(double* const coef, const char err[])
@@ -147,7 +156,16 @@ int input_coef(double* const coef, const char err[])
     return 0;
 }
 
-//solving
+/**
+    \brief Решение уравнения
+    \param consol_coefs структура, содержащая коэффиценты квадратного уравнения
+    \param consol_roots указатель на структуру, содержащую количество корней и корни
+    \details Проверка: если a = 0, уравнение линейное, line_roots() проверяет количество корней линейного уравнения,
+    затем line_eq() вычисляет корнию. Если a != 0, уравнение квадратное, discriminant() вычисляет дискриминант,
+    sq_roots() находит количество корней квадратного уравнения, square_eq() находит корни.
+    \return 0 - успешное завершение работы
+
+*/
 
 int solve(const coefficients_s consol_coefs, roots_s* const consol_roots)
  {
@@ -170,7 +188,15 @@ int solve(const coefficients_s consol_coefs, roots_s* const consol_roots)
     return 0;
 }
 
-
+/**
+    \brief Поиск количества корней линейного уравнения
+    \param coef_b коэффицент при линейном член уравнения
+    \param coef_c коэффицент при свободном члене уравнения
+    \details Если b = 0, возвращает partic_solutions(), либо бесконечное количество решений, либо невозможно решить уравнение.
+    Если b != 0 возвращает 1 решение.
+    \return ONE_SOLUTION - 1 решение
+    \return partic_solutions()
+ */
 
 numb_solutions line_roots(const double coef_b, const double coef_c)
 {
@@ -185,7 +211,13 @@ numb_solutions line_roots(const double coef_b, const double coef_c)
     return ONE_SOLUTION;
 }
 
-
+/**
+    \brief Частные случаи линейного уравнения
+    \param coef_c свободный член
+    \details Если c = 0, возвращает бесконечное количество решений, в противном случае возвращает, что уравнение нельзя решить.
+    \return INFINITY SOLUTIONS = 3 бесконечное множество решений
+    \return IMPOSSIBLE_EQUATION = 4 уравнение невозможно решить
+ */
 
 numb_solutions partic_solutions(const double coef_c)
 {
@@ -194,7 +226,14 @@ numb_solutions partic_solutions(const double coef_c)
     return (isequal(coef_c, 0)) ? INFINITY_SOLUTIONS : IMPOSSIBLE_EQUATION;
 }
 
-
+/**
+    \brief Решение линейного уравнения
+    \param consol_coefs Структура, содержащая коэффиценты квадратного уравнения
+    \param consol_roots указатель на структуру, содержащую количество корней и корни уравнения
+    \details Если количество решений = 1, consol_roots -> x1 присваивается значение корня.
+    В противном случае ничего не происходит и функция завершает работу.
+    \return 0 - успешное завершение работы
+ */
 
 int line_eq(const coefficients_s consol_coefs, roots_s* const consol_roots)
 {
@@ -210,7 +249,12 @@ int line_eq(const coefficients_s consol_coefs, roots_s* const consol_roots)
     return 0;
 }
 
-
+/**
+    \brief Вычисление дискриминанта
+    \param consol_coefs структура, содержащая коэффиценты квадратного уравнения
+    \details Вычисляется дискриминант по формуле D = b*b - 4*a*c.
+    \return discr - значение дискриминанта
+ */
 
 double discriminant(const coefficients_s consol_coefs)
 {
@@ -222,7 +266,14 @@ double discriminant(const coefficients_s consol_coefs)
     return discr;
 }
 
-
+/**
+    \brief Подсчёт количества корней квадратного уравнения
+    \param discr значение дискриминанта
+    \details Проверяет, если D < 0, то 0 решений, если D = 0, то 1 решение, если D > 0, то два решения.
+    \return ZERO_SOLUTIONS - 0 решений
+    \return ONE_SOLUTION - 1 решение
+    \return TWO_SOLUTIONS - 2 решения
+ */
 
 numb_solutions sq_roots(const double discr)
 {
@@ -270,7 +321,15 @@ bool isequal(const double coef_1, const double coef_2)
 }
 
 
-
+/**
+    \brief Очистка буфера
+    \details Создаёт переменную flag со значнием true. Если в строке остались символы помимо '\\n',
+    запускает цикл, считывающий по одному символу и удаляющий их из буфера, пока не дойдет до символа '\\n',
+    затем удаляет его и заканчивает работу.
+    Если цикл был запущен, значение flag меняется на false.
+    \return flag = true, если буфер не очищался
+    \return flag = false, если буфер очищался
+*/
 bool clean_buf()
 {
     bool flag = true;
