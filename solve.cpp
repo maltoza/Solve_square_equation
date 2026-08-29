@@ -245,6 +245,7 @@ int line_eq(const coefficients_s consol_coefs, roots_s* const consol_roots)
     if (consol_roots -> num_roots == ONE_SOLUTION)
     {
         consol_roots -> x1 = 0 - consol_coefs.coef_c/consol_coefs.coef_b;
+        consol_roots -> x2 = 0 - consol_coefs.coef_c/consol_coefs.coef_b;
     }
 
     return 0;
