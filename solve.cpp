@@ -6,43 +6,43 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define EPSILON 0.00000001
-#define NUM_HAND_TESTS 10
-#define NUM_RANDOM_TESTS 1000
-#define MAX_LEN 50
+#define EPSILON 0.00000001 ///< Погрешность сравнения чисел типа double
+#define NUM_HAND_TESTS 10 ///< Количество ручных тестов
+#define NUM_RANDOM_TESTS 1000 ///< Количество рандомных тестов
+#define MAX_LEN 50 ///< Максимальная длина строки
 
-#define NO_COLOR "\033[0m"
-#define RED "\033[1;31m"
-#define YELLOW "\033[1;33m"
-#define GREEN "\033[1;32m"
-#define PURPLE "\033[35m"
+#define NO_COLOR "\033[0m" ///< Белый цвет
+#define RED "\033[1;31m" ///< Красный цвет
+#define YELLOW "\033[1;33m" ///< Жёлтый цвет
+#define GREEN "\033[1;32m" ///< Зелёный цвет
+#define PURPLE "\033[35m" ///< Фиолетовый цвет
 
-// Множество возможных количеств решений
 /**
-    \details Количество решений квадратного уравнения (от 0 до 2),
-    бесконечное множество решений = 3,
-    невозможное количество корней = -1,
-    уравнение, которое невозможно решить = 4
+    \brief Множество решений квадратного уравнения
 */
-
 enum numb_solutions
 {
-    NOT_NUM_SOLUTIONS = -1,
-    ZERO_SOLUTIONS,
-    ONE_SOLUTION,
-    TWO_SOLUTIONS,
-    INFINITY_SOLUTIONS,
-    IMPOSSIBLE_EQUATION,
+    INITIALIZ_VAL = -1, ///<  Инициализирующее значение
+    ZERO_SOLUTIONS, ///< 0 решений
+    ONE_SOLUTION, ///< 1 решение
+    TWO_SOLUTIONS, ///< 2 решения
+    INFINITY_SOLUTIONS, ///< Бесконечное количество решений
+    IMPOSSIBLE_EQUATION, ///< Уравнение невозможно решить
 };
 
+/**
+    Структура, состоящая из значений, необходимых для решения квадратного уравнения
+ */
 struct values_s
 {
-    numb_solutions num_roots;
-    double coef_a, coef_b, coef_c;                                  //TODO: две структуры
+    numb_solutions num_roots; ///< Количество решений уравнения
+    double coef_a, ///< коэффицент перед квадратным членом
+    coef_b, ///< коэффицент перед линейным членом
+    coef_c; ///< свободный член
     double x1, x2;
-};
+}; //TODO: две структуры
 
-//TODO const в качастве аргументов функция
+
 
 int input     (values_s* consol_values);
 int input_coef(double* const coef, const char err[]);
@@ -75,7 +75,7 @@ double rand_double    ();
 
 int main()
 {
-    values_s consol_values = {.num_roots = NOT_NUM_SOLUTIONS,
+    values_s consol_values = {.num_roots = INITIALIZ_VAL,
                               .coef_a = NAN, .coef_b = NAN, .coef_c = NAN,
                               .x1 = NAN, .x2 = NAN};
 
@@ -98,25 +98,10 @@ int main()
 //enter
 
 /**
-    \date Август 2026 года
-    \brief Функция ввода коэффицентов
-    \details Запрос на ввод коэффицентов квадратного уравнения
-    \code
-    int input(values_s* consol_values)
-    {
-        printf("\nSolving square equation\n");
-        printf("Enter the coefficients a, b, c:");
-        printf("\nEnter the coefficient before x^2: ");
-        input_coef(&(consol_values -> coef_a));
-        printf("\nEnter the coefficient before x: ");
-        input_coef(&(consol_values -> coef_b));
-        printf( "\nEnter the absolute term of equation: ");
-        input_coef(&(consol_values -> coef_c));
-
-        return 0;
-    }
-    \endcode
-    \warning использовать с умом
+    \brief Функция запроса на ввод коэффицентов
+    \details Запрос на ввод коэффицентов квадратного уравнения, вызов фукции, считывающей значения коэффицентов с консоли
+    \param[in] consol_values
+    \warning
 
 */
 
@@ -301,7 +286,7 @@ bool clean_buf()
 
 int output(const values_s consol_values)
 {
-    assert(consol_values.num_roots != NOT_NUM_SOLUTIONS);
+    assert(consol_values.num_roots != INITIALIZ_VAL);
 
     switch (consol_values.num_roots)
     {
@@ -323,7 +308,7 @@ int output(const values_s consol_values)
         case IMPOSSIBLE_EQUATION:
             printf("Impossible to solve\n");
             break;
-        case NOT_NUM_SOLUTIONS:
+        case INITIALIZ_VAL:
         default:
             printf("Error\n");
             break;
@@ -399,7 +384,7 @@ int hand_tests()
         {.num_roots = ONE_SOLUTION,        .coef_a = 0, .coef_b = 2,  .coef_c = 10, .x1 = -5,  .x2 = -5 }
 
     };
-        //TODO длину массива sizeof()
+
     for (int num_test = 0; num_test  < NUM_HAND_TESTS; ++num_test)
     {
         test_success += run_hand_test(tests[num_test]);
@@ -412,7 +397,7 @@ int hand_tests()
 
 int run_hand_test(const values_s test)
 {
-    values_s check_values = {.num_roots = NOT_NUM_SOLUTIONS,
+    values_s check_values = {.num_roots = INITIALIZ_VAL,
                              .coef_a = test.coef_a, .coef_b = test.coef_b, .coef_c = test.coef_c,
                              .x1 = NAN, .x2 = NAN};
     solve(&check_values);
@@ -444,7 +429,7 @@ bool check_hand_test(const values_s check_values, const values_s test)
 int random_tests()
 {
     srand(time(NULL));
-    values_s rand_values = {.num_roots = NOT_NUM_SOLUTIONS,
+    values_s rand_values = {.num_roots = INITIALIZ_VAL,
                             .coef_a = NAN, .coef_b = NAN, .coef_c = NAN,
                             .x1 = NAN, .x2 = NAN};
     int success = 0;
