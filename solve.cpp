@@ -1,10 +1,16 @@
+/**
+    \file
+    \brief Документация программы solve.cpp
+ */
+
+
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <time.h> //TODO gitignore, заголовки в html, считывание из файла, мб защиту ввода, поделить программу на файлы
+#include <time.h> //TODO заголовки в html, считывание из файла, мб защиту ввода, поделить программу на файлы
 
 #define EPSILON 0.00000001 ///< Погрешность сравнения чисел типа double
 #define NUM_HAND_TESTS 10 ///< Количество ручных тестов
@@ -33,9 +39,9 @@ enum numb_solutions
 ///\brief Структура, содержащая коэффиценты квадратного уравнения
 struct coefficients_s
 {
-    double coef_a, ///< Коэффицент перед квадратным членом
-    coef_b, ///< Коэффицент перед линейным членом
-    coef_c; ///< Коэффицент перед свободным членом
+    double coef_a; ///< Коэффицент перед квадратным членом
+    double coef_b; ///< Коэффицент перед линейным членом
+    double coef_c; ///< Коэффицент перед свободным членом
 };
 
 
@@ -43,8 +49,8 @@ struct coefficients_s
 struct roots_s
 {
     numb_solutions num_roots; ///< Количество корней
-    double x1, ///< Меньший корень
-    x2; ///< Больший корень
+    double x1; ///< Меньший корень
+    double x2; ///< Больший корень
 };
 
 
@@ -99,12 +105,15 @@ int main()
 
 //--------------------------------------------------------------------------------------------------------
 
-//enter
-
+/**
+    \defgroup enter Ввод
+    \brief Собрание функций, отвечающих за ввод коэффицентов
+    @{
+ */
 /**
     \brief Функция запроса ввода коэффицентов
-    \details Запрос на ввод коэффицентов квадратного уравнения, вызов функции input_coef()
     \param consol_coefs Указатель на структуру коэффицентов consol_coef, созданную в main()
+    \details Запрос на ввод коэффицентов квадратного уравнения, вызов функции input_coef()
     \return 0 - успешное завершение работы функции
 
  */
@@ -152,8 +161,14 @@ int input_coef(double* const coef, const char prompt[])
 
     return 0;
 }
+/** @} */
 
 
+/**
+    \defgroup solving Решение
+    \brief Собрание функций, отвечающих за решение уравнения
+    @{
+ */
 /**
     \brief Решение уравнения
     \param consol_coefs структура, содержащая коэффиценты квадратного уравнения
@@ -313,8 +328,14 @@ int square_eq(roots_s* const consol_roots, const double discr, const coefficient
 
     return 0;
 }
+/** @} */
 
 
+/**
+    \defgroup helping Помощь
+    \brief Собрание вспомогательных функций
+    @{
+ */
 /**
     \brief Проверка на равенство
     \param coef_1 Первое число
@@ -325,7 +346,7 @@ int square_eq(roots_s* const consol_roots, const double discr, const coefficient
  */
 bool isequal(const double coef_1, const double coef_2)
 {
-    return ((isnan(coef_1) && isnan(coef_2)) || fabs(coef_1 - coef_2) < EPSILON)
+    return ((isnan(coef_1) && isnan(coef_2)) || fabs(coef_1 - coef_2) < EPSILON);
 }
 
 
@@ -353,8 +374,14 @@ bool clean_buf()
 
     return flag;
 }
+/** @} */
 
 
+/**
+    \defgroup output Вывод
+    \brief Собрание функций вывода
+    @{
+ */
 /**
     \brief Вывод корней
     \param consol_roots Структура, содержащая количество корней и корни уравнения
@@ -393,8 +420,14 @@ int output(const roots_s consol_roots)
 
     return 0;
 }
+/** @} */
 
 
+/**
+    \defgroup testing Тестирование
+    \brief Собрание функций, используемых для проведения тестов
+    @{
+ */
 /**
     \brief Проверка и запуск тестов
     \details checking_answer() проверяет, согласен ли пользователь запустить тесты,
@@ -674,3 +707,4 @@ double rand_double()
 
     return x;
 }
+/** @} */
