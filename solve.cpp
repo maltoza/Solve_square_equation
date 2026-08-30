@@ -7,7 +7,7 @@
     выводится ошибка тестирования и все неверно тестируемые значения. Количество успешных тестов подсчитывается
     и выводится после окончания проверки. После тестирования, либо если пользователь отказался от тестов,
     программа запрашивает коэффиценты квадратного уравнения. Есть два вида ввода: через файл и через командную строку.
-    После их ввода она вычисляет и выводит в терминал количество корней и сами корни.
+    После получения значений она вычисляет и выводит в терминал количество корней и сами корни.
     @section second_sec Принимаемые значения
     \details Три коэффицента квадратного уравнения, считывание происходит из командной строки или из файла.
     @section third_sec Github
@@ -73,7 +73,7 @@ struct roots_s
 
 int input_answer();
 int input             (coefficients_s* const coefs);
-int input_comline_coef(double* const coef,          const char prompt[]);
+int input_terminal_coef(double* const coef,          const char prompt[]);
 bool input_file_coef  (double* const coef,          FILE * f_enter);
 
 int solve                      (const coefficients_s coefs, roots_s* const roots);
@@ -137,9 +137,11 @@ int main()
 /**
     \brief Функция запроса ввода коэффицентов
     \param coefs Указатель на структуру коэффицентов consol_coef, созданную в main()
-    \details Запрос на ввод коэффицентов квадратного уравнения. Вызов функции input_answer().
-    В зависимости от выбора пользователя считывает коэффиценты из файла или из командной строки.
-    Если произошла ошибка в открытии файла, то возвращает ошибку.
+    \details Запрос на ввод коэффицентов квадратного уравнения. Вызывает функцию imput_answer() и
+    в зависимости от выбранного  метода ввода коэффицентов либо вызывает функцию imput_terminal_coef() для считывания
+    коэффицентов из командной строки, либо открывает файл с коэффицентами, проверяет на верность их написания
+    (в случае ошибки останавливает программу)
+    и с помощью функции input_file_coef() записывает их. Затем закрывает файл
     \return 0 - успешное завершение работы функции
 
  */
@@ -148,9 +150,9 @@ int input(coefficients_s* const coefs)
     int answer = input_answer();
     if (answer == 'C')
     {
-        input_comline_coef(&(coefs -> coef_a), "Enter the coefficient before x^2: ");
-        input_comline_coef(&(coefs -> coef_b), "Enter the coefficient before x: ");
-        input_comline_coef(&(coefs -> coef_c), "Enter the constant term: ");
+        input_terminal_coef(&(coefs -> coef_a), "Enter the coefficient before x^2: ");
+        input_terminal_coef(&(coefs -> coef_b), "Enter the coefficient before x: ");
+        input_terminal_coef(&(coefs -> coef_c), "Enter the constant term: ");
     }
     else
     {
@@ -212,7 +214,7 @@ int input_answer()
     В цикле программа выводит ошибку ввода и предлагает ввести ещё раз нужный коэффицент.
     \return 0 - успешное завершение программы
  */
-int input_comline_coef(double* const coef, const char prompt[])
+int input_terminal_coef(double* const coef, const char prompt[])
 {
     assert(coef != NULL);
 
@@ -232,6 +234,14 @@ int input_comline_coef(double* const coef, const char prompt[])
 }
 
 
+/**
+    \brief Ввод коэффицента из файла
+    \param coef Указатель на коэффицент, куда записывается значение из файла
+    \param f_enter Указатель на файл, в котором находятся коэффиценты
+    \details В случае, когда верно считалось не одно число или буфер очищался выводит ошибку.
+    \return true - коэффицент успешно записан
+    \return false - произошла ошибка, коэффицент не записан
+ */
 
 bool input_file_coef(double* const coef, FILE * f_enter)
 {
@@ -470,6 +480,14 @@ bool clean_consol_buf()
 }
 
 
+/**
+    \brief Очистка файлового буфера
+    \param f_enter Указатель на файл, в котором записаны коэффиценты
+    \details Цикл проходит по строке в файле, пока не встретит символ \\n, затем завершает работу.
+    Если цикл запускался, то у переменной flag будет значение false, в противном случае true.
+    \return flag = false - если буфер очищался
+    \return flag = true - если буфер очищался
+ */
 bool clean_file_buf(FILE * f_enter)
 {
     bool flag = true;
