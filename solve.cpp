@@ -3,11 +3,11 @@
 
     @section first_sec Описание работы
     \details При запуске программа спрашивает, хочет ли пользователь запустить тесты.
-    При положительном ответе она запускает рандомные и ручные тесты. Если тест не пройден,
+    При положительном ответе она запускает случайные и ручные тесты. Если тест не пройден,
     выводится ошибка тестирования и все неверно тестируемые значения. Количество успешных тестов подсчитывается
     и выводится после окончания проверки. После тестирования, либо если пользователь отказался от тестов,
     программа запрашивает коэффиценты квадратного уравнения. Есть два вида ввода: через файл и через командную строку.
-    После их ввода она вычисляет и выводит количество корней и сами корни.
+    После их ввода она вычисляет и выводит в терминал количество корней и сами корни.
     @section second_sec Принимаемые значения
     \details Три коэффицента квадратного уравнения, считывание происходит из командной строки или из файла.
     @section third_sec Github
@@ -23,28 +23,33 @@
 #include <stdlib.h>
 #include <time.h>
 
-//TODO считывание из файла, мб защиту ввода, поделить программу на файлы
+//TODO потом может как нибудь поделить программу на файлы
 
-#define EPSILON 0.00000001 ///< Погрешность сравнения чисел типа double
-#define NUM_HAND_TESTS 10 ///< Количество ручных тестов
+#define EPSILON 10e-10 ///< Погрешность сравнения чисел типа double
+
+#define NUM_HAND_TESTS 10     ///< Количество ручных тестов
 #define NUM_RANDOM_TESTS 1000 ///< Количество рандомных тестов
+
 #define MAX_LEN 50 ///< Максимальная длина строки
 
-#define NO_COLOR "\033[0m" ///< Отмена цвета
-#define RED "\033[1;31m" ///< Красный цвет
+#define ENTER_FILE "file_coefficients.txt" ///< Название файла, откуда считываются коэффиценты
+
+#define NO_COLOR "\033[0m"  ///< Отмена цвета
+#define RED "\033[1;31m"    ///< Красный цвет
 #define YELLOW "\033[1;33m" ///< Жёлтый цвет
-#define GREEN "\033[1;32m" ///< Зелёный цвет
-#define PURPLE "\033[35m" ///< Фиолетовый цвет
+#define GREEN "\033[1;32m"  ///< Зелёный цвет
+#define PURPLE "\033[35m"   ///< Фиолетовый цвет
+#define BLUE "\033[34m"     ///< Синий цвет
 
 
 ///\brief Множество решений квадратного уравнения
 enum numb_solutions
 {
-    INITIALIZ_VAL = -1, ///< Инициализирующее значение
-    ZERO_SOLUTIONS, ///< 0 решений
-    ONE_SOLUTION, ///< 1 решение
-    TWO_SOLUTIONS, ///< 2 решения
-    INFINITY_SOLUTIONS, ///< 3 Бесконечное количество решений
+    INITIALIZ_VAL = -1,  ///< Инициализирующее значение
+    ZERO_SOLUTIONS,      ///< 0 решений
+    ONE_SOLUTION,        ///< 1 решение
+    TWO_SOLUTIONS,       ///< 2 решения
+    INFINITY_SOLUTIONS,  ///< 3 Бесконечное количество решений
     IMPOSSIBLE_EQUATION, ///< 4 Уравнение невозможно решить
 };
 
@@ -57,7 +62,7 @@ struct coefficients_s
     double coef_c; ///< Коэффицент перед свободным членом
 };
 
-
+//TODO защита ввода, вывод ошибок лестницей, цвета и одинаковые фразы в from file from command line
 ///\brief Структура, содержащая количество корней и корни квадратного уравнения
 struct roots_s
 {
@@ -69,6 +74,7 @@ struct roots_s
 int input_answer();
 int input             (coefficients_s* const coefs);
 int input_comline_coef(double* const coef,          const char prompt[]);
+bool input_file_coef  (double* const coef,          FILE * f_enter);
 
 int solve                      (const coefficients_s coefs, roots_s* const roots);
 numb_solutions line_roots      (const double coef_b,               const double coef_c);
@@ -78,8 +84,9 @@ double discriminant            (const coefficients_s coefs);
 numb_solutions sq_roots        (const double discr);
 int square_eq                  (roots_s* const roots,       const double discr,          const coefficients_s coefs);
 
-bool isequal   (const double coef_1, const double coef_2);
-bool clean_buf ();
+bool isequal          (const double coef_1, const double coef_2);
+bool clean_consol_buf ();
+bool clean_file_buf   (FILE * f_enter);
 
 int output(const roots_s roots);
 
@@ -104,12 +111,12 @@ int main()
 
     if (testing())
     {
-        return 0;
+        return 1;
     }
 
     if (input(&coefs) == 1)
     {
-        return 0;
+        return 1;
     }
 
     solve(coefs, &roots);
@@ -147,15 +154,17 @@ int input(coefficients_s* const coefs)
     }
     else
     {
-        FILE* f_enter = fopen("file_coefficients.txt", "r");
-
+        FILE* f_enter = fopen(ENTER_FILE, "r");
         if (f_enter == NULL)
         {
-            printf("File openning error. Try again later");
+            printf("File openning error. Try again later"); //TODO ошибка открытия файлов в функции input()
             return 1;
         }
-
-        fscanf(f_enter, "%lg %lg %lg", &(coefs -> coef_a), &(coefs -> coef_b), &(coefs -> coef_c));
+        if (!input_file_coef(&(coefs -> coef_a), f_enter) || !input_file_coef(&(coefs -> coef_b), f_enter) ||
+        !input_file_coef(&(coefs -> coef_c), f_enter))
+        {
+            return 1;
+        }
 
         fclose(f_enter);
     }
@@ -165,21 +174,23 @@ int input(coefficients_s* const coefs)
 
 
 /**
-    \brief
+    \brief Выбор откуда вводить коэффиценты
+    \details Спрашивает, откуда считывать коэффиценты: из файла или из командной строки.
+    \return answer - ASCII код буквы ответа (F или C)
  */
 int input_answer()
 {
-    clean_buf();
+    clean_consol_buf();
     printf(YELLOW "How do you want to enter coefficients?\n" NO_COLOR);
-    printf(YELLOW "from file(F)/from command line(C)\n" NO_COLOR);
+    printf(BLUE "from file(F)" NO_COLOR "/" PURPLE "from command line(C)\n" NO_COLOR);
     int answer = 0;
     answer = toupper(getchar());
     while (answer != 'F' && answer != 'C')
     {
         printf(RED "Unknown command. Try again!\n" NO_COLOR);
         printf(YELLOW "How do you want to enter coefficients?\n" NO_COLOR);
-        printf(YELLOW "in file(F)/in command line(C)\n" NO_COLOR);
-        clean_buf();
+        printf(BLUE "from file(F)" NO_COLOR "/" PURPLE "from command line(C)\n" NO_COLOR);
+        clean_consol_buf();
         answer = toupper(getchar());
     }
 
@@ -194,7 +205,7 @@ int input_answer()
     \param prompt Массив символов (строка), уточняющий, какой коэффицент нужно вводить
     \details Пишет в командную строку что нужно вводить, создаёт переменную flag,
     сигнализирующую о количестве правильно считанных слов.
-    Запускает цикл, заканчивающийся, когда верно считано одно число и функция clean_buf() (очистка буфера) вернула true.
+    Запускает цикл, заканчивающийся, когда верно считано одно число и функция clean_consol_buf() (очистка буфера) вернула true.
     В цикле, если количество верно считанных чисел равно 0 (ни одного числа не считалось),
     очистка буфера запускается ещё раз, т.к. она не сработала в условии цикла из-за того,
     что первый аргумент логического "или" (||) вернул true.
@@ -207,11 +218,11 @@ int input_comline_coef(double* const coef, const char prompt[])
 
     printf("%s", prompt);
     int flag = 1;
-    while ((flag = scanf("%lg", coef)) != 1 || clean_buf() == false)
+    while ((flag = scanf("%lg", coef)) != 1 || clean_consol_buf() == false)
     {
         if (flag == 0)
         {
-            clean_buf();
+            clean_consol_buf();
         }
         printf(RED "Input error. Try again!\n" NO_COLOR);
         printf("%s", prompt);
@@ -219,6 +230,31 @@ int input_comline_coef(double* const coef, const char prompt[])
 
     return 0;
 }
+
+
+
+bool input_file_coef(double* const coef, FILE * f_enter)
+{
+    assert(coef != NULL);
+    assert(f_enter != NULL);
+
+    int flag = 1;
+    if ((flag = fscanf(f_enter, "%lg", coef)) != 1 || clean_file_buf(f_enter) == false)
+    {
+        if (flag == 0)
+        {
+            clean_file_buf(f_enter);
+        }
+        printf(RED "Input error. Try again!\n" NO_COLOR);
+        printf("Enter only double numbers, one in line.");
+        return false;
+    }
+
+    return true;
+}
+
+
+
 /** @} */
 
 
@@ -417,7 +453,7 @@ bool isequal(const double coef_1, const double coef_2)
     \return flag = true, если буфер не очищался
     \return flag = false, если буфер очищался
  */
-bool clean_buf()
+bool clean_consol_buf()
 {
     bool flag = true;
 
@@ -432,6 +468,24 @@ bool clean_buf()
 
     return flag;
 }
+
+
+bool clean_file_buf(FILE * f_enter)
+{
+    bool flag = true;
+
+    int c;
+    while((c = fgetc(f_enter)) != '\n')
+    {
+        if (!isspace(c))
+        {
+            flag = false;
+        }
+    }
+
+    return flag;
+}
+
 /** @} */
 
 
@@ -508,15 +562,15 @@ int checking_answer()
 {
     printf(YELLOW "Square equations solver\n");
     printf(YELLOW "Do you want to run tests before solving?\n" NO_COLOR);
-    printf(GREEN "Yes(Y)" RED "/NO(N)\n" NO_COLOR);
+    printf(GREEN "Yes(Y)" NO_COLOR "/" RED "NO(N)\n" NO_COLOR);
     int answer = 0;
     answer = toupper(getchar());
     while (answer != 'Y' && answer != 'N')
     {
         printf(RED "Unknown command. Try again!\n" NO_COLOR);
         printf(YELLOW "Do you want to run tests before solving?\n" NO_COLOR);
-        printf(GREEN "Yes(Y)" RED "/NO(N)\n" NO_COLOR);
-        clean_buf();
+        printf(GREEN "Yes(Y)" NO_COLOR "/" RED "NO(N)\n" NO_COLOR);
+        clean_consol_buf();
         answer = toupper(getchar());
     }
 
