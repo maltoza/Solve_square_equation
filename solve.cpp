@@ -6,10 +6,10 @@
     При положительном ответе она запускает рандомные и ручные тесты. Если тест не пройден,
     выводится ошибка тестирования и все неверно тестируемые значения. Количество успешных тестов подсчитывается
     и выводится после окончания проверки. После тестирования, либо если пользователь отказался от тестов,
-    программа запрашивает коэффиценты квадратного уравнения.
+    программа запрашивает коэффиценты квадратного уравнения. Есть два вида ввода: через файл и через командную строку.
     После их ввода она вычисляет и выводит количество корней и сами корни.
     @section second_sec Принимаемые значения
-    \details Три коэффицента квадратного уравнения, считывание происходит из командной строки
+    \details Три коэффицента квадратного уравнения, считывание происходит из командной строки или из файла.
     @section third_sec Github
     \details https://github.com/maltoza/Solve_square_equation.git
     \date Август 2026, ЛШ ФРКТ
@@ -21,7 +21,9 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <time.h> //TODO заголовки в html, считывание из файла, мб защиту ввода, поделить программу на файлы
+#include <time.h>
+
+//TODO считывание из файла, мб защиту ввода, поделить программу на файлы
 
 #define EPSILON 0.00000001 ///< Погрешность сравнения чисел типа double
 #define NUM_HAND_TESTS 10 ///< Количество ручных тестов
@@ -64,22 +66,22 @@ struct roots_s
     double x2;                ///< Больший корень
 };
 
+int input_answer();
+int input             (coefficients_s* const coefs);
+int input_comline_coef(double* const coef,          const char prompt[]);
 
-int input     (coefficients_s* const consol_coefs);
-int input_coef(double* const coef,                 const char prompt[]);
-
-int solve                      (const coefficients_s consol_coefs, roots_s* const consol_roots);
+int solve                      (const coefficients_s coefs, roots_s* const roots);
 numb_solutions line_roots      (const double coef_b,               const double coef_c);
 numb_solutions partic_solutions(const double coef_c);
-int line_eq                    (const coefficients_s consol_coefs, roots_s* const consol_roots);
-double discriminant            (const coefficients_s consol_coefs);
+int line_eq                    (const coefficients_s coefs, roots_s* const roots);
+double discriminant            (const coefficients_s coefs);
 numb_solutions sq_roots        (const double discr);
-int square_eq                  (roots_s* const consol_roots,       const double discr,          const coefficients_s consol_coefs);
+int square_eq                  (roots_s* const roots,       const double discr,          const coefficients_s coefs);
 
 bool isequal   (const double coef_1, const double coef_2);
 bool clean_buf ();
 
-int output(const roots_s consol_roots);
+int output(const roots_s roots);
 
 bool testing          ();
 int checking_answer   ();
@@ -97,24 +99,28 @@ double rand_double    ();
 
 int main()
 {
-    coefficients_s consol_coefs = {.coef_a = NAN, .coef_b = NAN, .coef_c = NAN};
-    roots_s consol_roots = {.num_roots = INITIALIZ_VAL, .x1 = NAN, .x2 = NAN};
+    coefficients_s coefs = {.coef_a = NAN, .coef_b = NAN, .coef_c = NAN};
+    roots_s roots = {.num_roots = INITIALIZ_VAL, .x1 = NAN, .x2 = NAN};
 
     if (testing())
     {
         return 0;
     }
 
-    input(&consol_coefs);
+    if (input(&coefs) == 1)
+    {
+        return 0;
+    }
 
-    solve(consol_coefs, &consol_roots);
+    solve(coefs, &roots);
 
-    output(consol_roots);
+    output(roots);
 
     return 0;
 }
 
 //--------------------------------------------------------------------------------------------------------
+
 
 /**
     \defgroup enter Ввод
@@ -123,22 +129,63 @@ int main()
  */
 /**
     \brief Функция запроса ввода коэффицентов
-    \param consol_coefs Указатель на структуру коэффицентов consol_coef, созданную в main()
-    \details Запрос на ввод коэффицентов квадратного уравнения, вызов функции input_coef()
+    \param coefs Указатель на структуру коэффицентов consol_coef, созданную в main()
+    \details Запрос на ввод коэффицентов квадратного уравнения. Вызов функции input_answer().
+    В зависимости от выбора пользователя считывает коэффиценты из файла или из командной строки.
+    Если произошла ошибка в открытии файла, то возвращает ошибку.
     \return 0 - успешное завершение работы функции
 
  */
-int input(coefficients_s* const consol_coefs)
+int input(coefficients_s* const coefs)
 {
-    printf("Solving square equation\n");
-    printf("Enter the coefficients a, b, c\n");
+    int answer = input_answer();
+    if (answer == 'C')
+    {
+        input_comline_coef(&(coefs -> coef_a), "Enter the coefficient before x^2: ");
+        input_comline_coef(&(coefs -> coef_b), "Enter the coefficient before x: ");
+        input_comline_coef(&(coefs -> coef_c), "Enter the constant term: ");
+    }
+    else
+    {
+        FILE* f_enter = fopen("file_coefficients.txt", "r");
 
-    input_coef(&(consol_coefs -> coef_a), "Enter the coefficient before x^2: ");
-    input_coef(&(consol_coefs -> coef_b), "Enter the coefficient before x: ");
-    input_coef(&(consol_coefs -> coef_c), "Enter the constant term: ");
+        if (f_enter == NULL)
+        {
+            printf("File openning error. Try again later");
+            return 1;
+        }
+
+        fscanf(f_enter, "%lg %lg %lg", &(coefs -> coef_a), &(coefs -> coef_b), &(coefs -> coef_c));
+
+        fclose(f_enter);
+    }
 
     return 0;
 }
+
+
+/**
+    \brief
+ */
+int input_answer()
+{
+    clean_buf();
+    printf(YELLOW "How do you want to enter coefficients?\n" NO_COLOR);
+    printf(YELLOW "from file(F)/from command line(C)\n" NO_COLOR);
+    int answer = 0;
+    answer = toupper(getchar());
+    while (answer != 'F' && answer != 'C')
+    {
+        printf(RED "Unknown command. Try again!\n" NO_COLOR);
+        printf(YELLOW "How do you want to enter coefficients?\n" NO_COLOR);
+        printf(YELLOW "in file(F)/in command line(C)\n" NO_COLOR);
+        clean_buf();
+        answer = toupper(getchar());
+    }
+
+    return answer;
+}
+
 
 
 /**
@@ -154,7 +201,7 @@ int input(coefficients_s* const consol_coefs)
     В цикле программа выводит ошибку ввода и предлагает ввести ещё раз нужный коэффицент.
     \return 0 - успешное завершение программы
  */
-int input_coef(double* const coef, const char prompt[])
+int input_comline_coef(double* const coef, const char prompt[])
 {
     assert(coef != NULL);
 
@@ -182,29 +229,29 @@ int input_coef(double* const coef, const char prompt[])
  */
 /**
     \brief Решение уравнения
-    \param consol_coefs структура, содержащая коэффиценты квадратного уравнения
-    \param consol_roots указатель на структуру, содержащую количество корней и корни
+    \param coefs структура, содержащая коэффиценты квадратного уравнения
+    \param roots указатель на структуру, содержащую количество корней и корни
     \details Проверка: если a = 0, уравнение линейное, line_roots() проверяет количество корней линейного уравнения,
     затем line_eq() вычисляет корнию. Если a != 0, уравнение квадратное, discriminant() вычисляет дискриминант,
     sq_roots() находит количество корней квадратного уравнения, square_eq() находит корни.
     \return 0 - успешное завершение работы
  */
-int solve(const coefficients_s consol_coefs, roots_s* const consol_roots)
+int solve(const coefficients_s coefs, roots_s* const roots)
 {
-    assert(isfinite(consol_coefs.coef_a));
-    assert(isfinite(consol_coefs.coef_b));
-    assert(isfinite(consol_coefs.coef_c));
+    assert(isfinite(coefs.coef_a));
+    assert(isfinite(coefs.coef_b));
+    assert(isfinite(coefs.coef_c));
 
-    if (isequal(consol_coefs.coef_a, 0))
+    if (isequal(coefs.coef_a, 0))
     {
-        consol_roots -> num_roots = line_roots(consol_coefs.coef_b, consol_coefs.coef_c);
-        line_eq(consol_coefs, consol_roots);
+        roots -> num_roots = line_roots(coefs.coef_b, coefs.coef_c);
+        line_eq(coefs, roots);
     }
     else
     {
-        double discr = discriminant(consol_coefs);
-        (consol_roots -> num_roots) = sq_roots(discr);
-        square_eq(consol_roots, discr, consol_coefs);
+        double discr = discriminant(coefs);
+        (roots -> num_roots) = sq_roots(discr);
+        square_eq(roots, discr, coefs);
     }
 
     return 0;
@@ -251,22 +298,22 @@ numb_solutions partic_solutions(const double coef_c)
 
 /**
     \brief Решение линейного уравнения
-    \param consol_coefs Структура, содержащая коэффиценты квадратного уравнения
-    \param consol_roots Указатель на структуру, содержащую количество корней и корни уравнения
-    \details Если количество решений = 1, то consol_roots -> x1 и consol_roots -> x2 присваивается значение корня.
+    \param coefs Структура, содержащая коэффиценты квадратного уравнения
+    \param roots Указатель на структуру, содержащую количество корней и корни уравнения
+    \details Если количество решений = 1, то roots -> x1 и roots -> x2 присваивается значение корня.
     В противном случае ничего не происходит и функция завершает работу.
     \return 0 - успешное завершение работы
  */
-int line_eq(const coefficients_s consol_coefs, roots_s* const consol_roots)
+int line_eq(const coefficients_s coefs, roots_s* const roots)
 {
-    assert(isfinite(consol_coefs.coef_a));
-    assert(isfinite(consol_coefs.coef_b));
-    assert(isfinite(consol_coefs.coef_c));
+    assert(isfinite(coefs.coef_a));
+    assert(isfinite(coefs.coef_b));
+    assert(isfinite(coefs.coef_c));
 
-    if (consol_roots -> num_roots == ONE_SOLUTION)
+    if (roots -> num_roots == ONE_SOLUTION)
     {
-        consol_roots -> x1 = 0 - consol_coefs.coef_c/consol_coefs.coef_b;
-        consol_roots -> x2 = 0 - consol_coefs.coef_c/consol_coefs.coef_b;
+        roots -> x1 = 0 - coefs.coef_c/coefs.coef_b;
+        roots -> x2 = 0 - coefs.coef_c/coefs.coef_b;
     }
 
     return 0;
@@ -275,17 +322,17 @@ int line_eq(const coefficients_s consol_coefs, roots_s* const consol_roots)
 
 /**
     \brief Вычисление дискриминанта
-    \param consol_coefs Структура, содержащая коэффиценты квадратного уравнения
+    \param coefs Структура, содержащая коэффиценты квадратного уравнения
     \details Вычисляется дискриминант по формуле D = b*b - 4*a*c.
     \return discr - значение дискриминанта
  */
-double discriminant(const coefficients_s consol_coefs)
+double discriminant(const coefficients_s coefs)
 {
-    assert(isfinite(consol_coefs.coef_a));
-    assert(isfinite(consol_coefs.coef_b));
-    assert(isfinite(consol_coefs.coef_c));
+    assert(isfinite(coefs.coef_a));
+    assert(isfinite(coefs.coef_b));
+    assert(isfinite(coefs.coef_c));
 
-    double discr = consol_coefs.coef_b * consol_coefs.coef_b - 4 * consol_coefs.coef_a * consol_coefs.coef_c;
+    double discr = coefs.coef_b * coefs.coef_b - 4 * coefs.coef_a * coefs.coef_c;
     return discr;
 }
 
@@ -319,23 +366,23 @@ numb_solutions sq_roots(const double discr)
 
 /**
     \brief Решение квадратного уравнения
-    \param consol_roots Структура, содержащая количество корней и корни уравнения
+    \param roots Структура, содержащая количество корней и корни уравнения
     \param discr Дискриминант
-    \param consol_coefs Структура, содержащая коэффиценты
+    \param coefs Структура, содержащая коэффиценты
     \details Подсчитывает корень из дискриминанта. Присваивает x1 значение меньшего корня и x2 значение большего корня.
     При совпадении корней им присваиваются одинаковые значения.
     \return 0 - успешное завершение работы
 
  */
-int square_eq(roots_s* const consol_roots, const double discr, const coefficients_s consol_coefs)
+int square_eq(roots_s* const roots, const double discr, const coefficients_s coefs)
 {
-    assert(isfinite(consol_coefs.coef_a));
-    assert(isfinite(consol_coefs.coef_b));
+    assert(isfinite(coefs.coef_a));
+    assert(isfinite(coefs.coef_b));
     assert(isfinite(discr));
 
     double sq_discr = sqrt(discr);
-    (consol_roots -> x1) = (0 - consol_coefs.coef_b - sq_discr) / (2 * consol_coefs.coef_a);
-    (consol_roots -> x2) = (0 - consol_coefs.coef_b + sq_discr) / (2 * consol_coefs.coef_a);
+    (roots -> x1) = (0 - coefs.coef_b - sq_discr) / (2 * coefs.coef_a);
+    (roots -> x2) = (0 - coefs.coef_b + sq_discr) / (2 * coefs.coef_a);
 
     return 0;
 }
@@ -374,7 +421,7 @@ bool clean_buf()
 {
     bool flag = true;
 
-    char c;
+    int c;
     while((c = getchar()) != '\n')
     {
         if (!isspace(c))
@@ -395,27 +442,27 @@ bool clean_buf()
  */
 /**
     \brief Вывод корней
-    \param consol_roots Структура, содержащая количество корней и корни уравнения
+    \param roots Структура, содержащая количество корней и корни уравнения
     \details Выводит количество и значения корней, соответствующее значению num_roots.
     \return 0 - успешное завершение работы
  */
-int output(const roots_s consol_roots)
+int output(const roots_s roots)
 {
-    assert(consol_roots.num_roots != INITIALIZ_VAL);
+    assert(roots.num_roots != INITIALIZ_VAL);
 
-    switch (consol_roots.num_roots)
+    switch (roots.num_roots)
     {
         case ZERO_SOLUTIONS:  //no solutions
             printf("0 solutions\n");
             break;
         case ONE_SOLUTION:  //line equation - 1 root
             printf("Line equation: 1 solution\n");
-            printf("x = %lg", consol_roots.x1);
+            printf("x = %lg", roots.x1);
             break;
         case TWO_SOLUTIONS: //square equation - 2 roots
             printf("2 solutions:\n");
-            printf("x1 = %lg\n", consol_roots.x1);
-            printf("x2 = %lg\n", consol_roots.x2);
+            printf("x1 = %lg\n", roots.x1);
+            printf("x2 = %lg\n", roots.x2);
             break;
         case INFINITY_SOLUTIONS:
             printf("Infinite number of solutions\n");
@@ -658,8 +705,8 @@ bool run_random_test(coefficients_s rand_coefs, roots_s* const rand_roots)
     \param rand_roots Структура, содержащая корни, вычисленные из рандомных коэффицентов
     \details Первая проверка: если 0 корней, бесконечное количество решений или уравнение нельзя решить,
     то x1 и x2 проверяются на NAN. В случае успеха возвращается true.
-    Вторая проверка: если 1 корень, то x2 проверяется на NAN и проверяется верность значения x1 с помощью check_sq_root()
-    Третья проверка: если 2 корня, то проверяется верность значений x1 и x2 с помощью check_sq_root()
+    Вторая проверка: если 1 или 2 корня, то проверяется верность значений x1 и x2 с помощью check_sq_root(),
+    т.к. при совпадении корней результат записвается в оба корня.
     \return true - проверка успешна
     \return false - проверка провалена
  */
@@ -671,12 +718,8 @@ bool check_random_test(const coefficients_s rand_coefs, roots_s const rand_roots
     {
         return true;
     }
-    else if (rand_roots.num_roots == ONE_SOLUTION && isnan(rand_roots.x2) && check_sq_root(rand_coefs, rand_roots.x1))
-    {
-        return true;
-    }
-    else if (rand_roots.num_roots == TWO_SOLUTIONS && check_sq_root(rand_coefs, rand_roots.x1)
-    && check_sq_root(rand_coefs, rand_roots.x2))
+    else if ((rand_roots.num_roots == TWO_SOLUTIONS || rand_roots.num_roots == ONE_SOLUTION)
+    && check_sq_root(rand_coefs, rand_roots.x1) && check_sq_root(rand_coefs, rand_roots.x2))
     {
         return true;
     }
