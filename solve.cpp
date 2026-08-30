@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-//TODO потом может как нибудь поделить программу на файлы
+//TODO поделить программу на файлы
 
 #define EPSILON 10e-10 ///< Погрешность сравнения чисел типа double
 
@@ -62,7 +62,7 @@ struct coefficients_s
     double coef_c; ///< Коэффицент перед свободным членом
 };
 
-//TODO вывод ошибок лестницей
+
 ///\brief Структура, содержащая количество корней и корни квадратного уравнения
 struct roots_s
 {
@@ -111,13 +111,13 @@ int main()
 
     if (testing())
     {
-        printf("Error in main(). Stopping programm.\n");
+        printf(RED "Error" NO_COLOR " in %s file, %s function, %d line\n", __FILE__, __FUNCTION__, __LINE__);
         return 1;
     }
 
     if (input(&coefs) == 1)
     {
-        printf("Error in main(). Stopping programm.\n");
+        printf(RED "Error" NO_COLOR " in %s file, %s function, %d line\n", __FILE__, __FUNCTION__, __LINE__);
         return 1;
     }
 
@@ -161,7 +161,7 @@ int input(coefficients_s* const coefs)
         FILE* f_enter = fopen(ENTER_FILE, "r");
         if (f_enter == NULL)
         {
-            printf("Error in input(coefficients_s* const coefs). Can't open file.\n"); //TODO ошибка открытия файлов в функции input()
+            printf(RED "Error" NO_COLOR " in %s file, %s function, %d line\n", __FILE__, __FUNCTION__, __LINE__);
             return 1;
         }
         if (!input_file_coef(&(coefs -> coef_a), f_enter) || !input_file_coef(&(coefs -> coef_b), f_enter) ||
@@ -228,7 +228,7 @@ int input_terminal_coef(double* const coef, const char prompt[])
         {
             clean_consol_buf();
         }
-        printf(RED "Error in input_terminal_coef(double* const coef, const char prompt[]). Can't read coefficient\n" NO_COLOR);
+        printf(RED "Error" NO_COLOR " in %s file, %s function, %d line\n", __FILE__, __FUNCTION__, __LINE__);
         printf("%s", prompt);
     }
 
@@ -257,8 +257,8 @@ bool input_file_coef(double* const coef, FILE * f_enter)
         {
             clean_file_buf(f_enter);
         }
-        printf(RED "Error in input_file_coef(double* const coef, FILE * f_enter). Can't read numbers.\n" NO_COLOR);
-        printf("Enter only double numbers, one in line.");
+        printf(RED "Error" NO_COLOR " in %s file, %s function, %d line\n", __FILE__, __FUNCTION__, __LINE__);
+        printf(RED "Enter only double numbers, one in line.\n" NO_COLOR);
         return false;
     }
 
