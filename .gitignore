@@ -1,4 +1,14 @@
 *
-!file_coefficients.txt
-!solve.cpp
 !.gitignore
+!solve.cpp
+!file_coefficients.txt
+!general.h
+!testing.h
+!testing.cpp
+!solving.h
+!solving.cpp
+!helping.h
+!helping.cpp
+!input.h
+!input.cpp
+!c:\Anna\C\solve-square-equation\html\index.html
