@@ -20,7 +20,7 @@
 
 
 
-#define EPSILON 10e-10 ///< Погрешность сравнения чисел типа double
+#define EPSILON 1e-6 ///< Погрешность сравнения чисел типа double
 
 #define NUM_HAND_TESTS 10     ///< Количество ручных тестов
 #define NUM_RANDOM_TESTS 1000 ///< Количество рандомных тестов

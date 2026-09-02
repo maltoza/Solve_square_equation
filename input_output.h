@@ -1,5 +1,5 @@
-#ifndef INPUT_H
-#define INPUT_H
+#ifndef INPUT_OUTPUT_H
+#define INPUT_OUTPUT_H
 
 #include <stdio.h>
 #include <assert.h>
@@ -15,4 +15,4 @@ bool input_file_coef  (double* const coef,          FILE * f_enter);
 
 int output(const roots_s roots);
 
-#endif //INPUT_H
+#endif //INPUT_OUTPUT_H

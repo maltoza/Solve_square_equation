@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <time.h>
 #include <assert.h>
+#include <ctype.h>
+#include "general.h"
+#include "helping.h"
 #include "solving.h"
 
 bool testing          ();

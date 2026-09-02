@@ -1,5 +1,8 @@
+#include "general.h"
+#include "input_output.h"
+#include "solving.h"
+#include "helping.h"
 #include "testing.h"
-
 //--------------------------------------------------------------------------------------------------------
 
 int main()

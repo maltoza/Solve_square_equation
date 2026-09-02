@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <math.h>
 #include "general.h"
 
 

@@ -1,6 +1,6 @@
 *
 !.gitignore
-!solve.cpp
+!main.cpp
 !file_coefficients.txt
 !general.h
 !testing.h
@@ -9,6 +9,5 @@
 !solving.cpp
 !helping.h
 !helping.cpp
-!input.h
-!input.cpp
-!c:\Anna\C\solve-square-equation\html\index.html
+!input_output.h
+!input_output.cpp

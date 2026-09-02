@@ -1,7 +1,4 @@
-#include "stdlib.h"
 #include "helping.h"
-#include "math.h"
-
 
 
 /**

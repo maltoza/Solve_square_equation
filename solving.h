@@ -1,10 +1,11 @@
 #ifndef SOLVING_H
-#define SOVING_H
+#define SOLVING_H
 
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
-#include "input.h"
+#include "general.h"
+#include "helping.h"
 
 int solve                      (const coefficients_s coefs, roots_s* const roots);
 numb_solutions line_roots      (const double coef_b,               const double coef_c);
