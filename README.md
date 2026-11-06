@@ -3,4 +3,4 @@
 Есть возможность ввода коэффицентов через файл, либо через терминал. 
 После решения выводит в терминал количество корней уравнения и сами корни.
 
-[Документация] (file:///C:/Anna/C/ded/solve-square-equation/html/index.html)
+[Документация](file:///C:/Anna/C/ded/solve-square-equation/html/index.html)
